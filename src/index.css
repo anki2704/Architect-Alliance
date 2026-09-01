@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+@layer base {
+  /* ─── LIGHT THEME ONLY (dark mode removed) ─── */
+  :root,
+  [data-theme="light"],
+  [data-theme="dark"] {
+    --bg-main: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-surface: #F5F5F3;
+    --bg-elevated: #EBEBEA;
+    --text-primary: #0A0A0A;
+    --text-secondary: #525252;
+    --text-muted: #737373;
+    --text-on-accent: #FFFFFF;
+    --accent-warm: #FD6700;
+    --accent-warm-hover: #E55A00;
+    --accent-amber: #E86B00;
+    --border-light: rgba(10, 10, 10, 0.12);
+    --border-warm: rgba(253, 103, 0, 0.3);
+    --overlay: rgba(10, 10, 10, 0.55);
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 20px 45px rgba(253, 103, 0, 0.12);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-card-bg: rgba(255, 255, 255, 0.88);
+    --glass-nav-bg: rgba(255, 255, 255, 0.9);
+    --input-bg: rgba(255, 255, 255, 0.95);
+    --scrollbar-track: #F0F0EE;
+    --scrollbar-thumb: #C4C4C0;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.35s ease, color 0.35s ease;
+  }
+
+  h1, h2, h3, h4, .font-serif-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}
+
+/* Perspective 3D Tilt Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Glassmorphism — theme aware */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+}
+
+.glass-panel-darker {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+  color: var(--text-primary);
+}
+
+.glass-card {
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--border-warm);
+  box-shadow: var(--shadow-hover);
+}
+
+.glass-nav {
+  background: var(--glass-nav-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.06);
+}
+
+.glass-input {
+  background: var(--input-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  transition: all 0.25s ease;
+}
+
+.glass-input:focus {
+  border-color: var(--accent-warm);
+  box-shadow: 0 0 0 4px rgba(253, 103, 0, 0.18);
+}
+
+.glass-pill {
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.glass-button {
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.glass-button:hover {
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-color: var(--border-warm);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Subtle Film Grain */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3Cfilter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] .grain-overlay {
+  opacity: 0.015;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-warm);
+}
