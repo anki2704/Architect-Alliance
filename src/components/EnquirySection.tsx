@@ -121,20 +121,26 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
               <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] mb-2">
                 Contact *
               </label>
+              <div className="flex items-center gap-0 rounded-xl glass-input overflow-hidden focus-within:border-[var(--accent-warm)]">
+                <span className="pl-4 pr-2 py-3 text-sm text-[var(--text-primary)] select-none shrink-0">
+                  +91
+                </span>
               <input
                 type="tel"
                 required
                 inputMode="tel"
                 autoComplete="tel"
-                placeholder="+91 XXXXX XXXXX"
+                placeholder="XXXXX XXXXX"
                 value={contact}
                 onChange={(e) => {
                   // sirf digits, +, space, dash allow
+                  if (e.target.value.length > 10) return;
                   const value = e.target.value.replace(/[^0-9+\-\s]/g, '');
-                  setContact(e.target.value);
+                  setContact(value);
                 }}
-                className="w-full px-4 py-3 rounded-xl glass-input text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-warm)]"
+                className="flex-1 min-w-0 pr-4 py-3 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none border-0"
               />
+              </div>
             </div>
 
             <div>

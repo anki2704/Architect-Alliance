@@ -67,13 +67,13 @@ async function seed() {
     assignedDesignerId: designer._id
   });
 
-  await EnquiryMessage.create({
+  /*await EnquiryMessage.create({
     name: 'Eleanor Vance',
     email: 'eleanor@vancedesign.com',
     subject: 'Feasibility Study for Commercial Plaza',
     message:
       'We are looking to develop a 15-story mixed-use commercial space downtown and would like to schedule an initial design review.'
-  });
+  });*/
 
   console.log('\n[Seed] Done! Login credentials:');
   console.log(`  Admin:     ${admin.email} / ${SEED_CREDENTIALS.admin.usedFallback ? '(default dev password)' : '(from .env)'}`);
