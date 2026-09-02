@@ -99,4 +99,5 @@ If `EMAIL_USER` / `EMAIL_PASS` are empty, OTP is printed to the server console (
 | GET | `/api/auth/me` | Requires Bearer token |
 | POST | `/api/auth/logout` | Revokes current JWT server-side |
 
-Forgot password works for **admin**, **designer**, and **customer** — use the account email and the OTP sent to Gmail.
+Forgot password works for **admin**, **designer**, and **customer** — use the account email and the OTP sent 
+
