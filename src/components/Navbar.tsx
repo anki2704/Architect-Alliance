@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ShieldCheck, User, LogOut, MessageCircle } from 'lucide-react';
+import { Menu, X, ShieldCheck, LogOut, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserRole } from '../types';
 
@@ -7,7 +7,6 @@ interface NavbarProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
   currentUser: { name: string; role: UserRole } | null;
-  onOpenAuth: () => void;
   onLogout: () => void;
   isEnquiryOpen: boolean;
   onToggleEnquiry: () => void;
@@ -18,7 +17,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   onNavigate,
   currentUser,
-  onOpenAuth,
   onLogout,
   isEnquiryOpen,
   onToggleEnquiry,
@@ -151,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <div className="hidden lg:flex items-center gap-2">
-              {currentUser ? (
+              {currentUser && (
                 <>
                   <button
                     onClick={() => handleNavClick('dashboard')}
@@ -173,17 +171,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>Logout</span>
                   </button>
                 </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onOpenAuth}
-                  data-cursor="SIGNIN"
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[var(--bg-card)] border border-[var(--text-primary)]/20 text-[var(--text-primary)] text-sm font-sans font-bold hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] hover:border-[var(--accent-warm)] transition-all cursor-pointer shadow-xs"
-                  title="Sign In / Register"
-                >
-                  <User className="w-4.5 h-4.5" />
-                  <span>Login</span>
-                </button>
               )}
             </div>
 
@@ -237,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Contact Us</span>
               </button>
 
-              {currentUser ? (
+              {currentUser && (
                 <>
                   <button
                     onClick={() => handleNavClick('dashboard')}
@@ -257,17 +244,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     Logout
                   </button>
                 </>
-              ) : (
-                <button
-                  onClick={() => {
-                    onOpenAuth();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full border border-[var(--text-primary)]/20 bg-[var(--bg-card)] text-[var(--text-primary)] text-sm font-sans font-bold cursor-pointer"
-                >
-                  <User className="w-5 h-5" />
-                  Login / Register
-                </button>
               )}
             </div>
           </motion.div>
