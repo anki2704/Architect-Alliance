@@ -14,8 +14,8 @@ import { TestimonialsSection } from './components/TestimonialsSection';
 import { DashboardView } from './components/DashboardView';
 import { EnquirySection } from './components/EnquirySection';
 import { Footer } from './components/Footer';
-import { AuthModal } from './components/AuthModal';
 import { ProjectDetailView } from './components/ProjectDetailView';
+import { AdminLogin } from './components/AdminLogin';
 
 import { Project, User } from './types';
 import { projectsApi } from './services/api';
@@ -72,7 +72,6 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [lenisInstance, setLenisInstance] = useState<Lenis | null>(null);
@@ -245,6 +244,15 @@ export default function App() {
     }
   };
 
+  // Dedicated admin login page — completely hidden from public UI
+  if (location.pathname === '/admin-login') {
+    return (
+      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)]">
+        <AdminLogin onLoginSuccess={handleLoginSuccess} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] selection:bg-[var(--accent-warm)] selection:text-[var(--text-on-accent)] relative">
       {/* Preloader */}
@@ -254,18 +262,17 @@ export default function App() {
       <div className="grain-overlay" aria-hidden="true" />
 
       {/* Responsive Header Navigation */}
-   {!showPreloader && (
-  <Navbar
-    activeSection={activeSection}
-    onNavigate={handleNavigate}
-    currentUser={currentUser}
-    onOpenAuth={() => setIsAuthOpen(true)}
-    onLogout={handleLogout}
-    isEnquiryOpen={isEnquiryOpen}
-    onToggleEnquiry={() => setIsEnquiryOpen((v) => !v)}
-    isHomePage={location.pathname === '/'}
-  />
-)}
+      {!showPreloader && (
+        <Navbar
+          activeSection={activeSection}
+          onNavigate={handleNavigate}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          isEnquiryOpen={isEnquiryOpen}
+          onToggleEnquiry={() => setIsEnquiryOpen((v) => !v)}
+          isHomePage={location.pathname === '/'}
+        />
+      )}
 
       {/* Main Page Content */}
       <main>
@@ -313,13 +320,6 @@ export default function App() {
     
       {/* Footer */}
       <Footer onNavigate={handleNavigate} />
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-      />
 
       {/* Dashboard Popup */}
       {currentUser && (
