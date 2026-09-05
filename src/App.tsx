@@ -290,8 +290,8 @@ export default function App() {
                     onProjectDeleted={(id) => setProjects((prev) => prev.filter((p) => p.id !== id))}
                   />
                 </div>
-                <ServicesSection />
                 <IsometricFloorPlanViewer isAdmin={currentUser?.role === 'admin'} onEnquire={() => setIsEnquiryOpen(true)}/>
+                <ServicesSection />
                 <TestimonialsSection />
               </>
             }
