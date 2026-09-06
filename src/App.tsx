@@ -16,7 +16,7 @@ import { EnquirySection } from './components/EnquirySection';
 import { Footer } from './components/Footer';
 import { ProjectDetailView } from './components/ProjectDetailView';
 import { AdminLogin } from './components/AdminLogin';
-
+import { JournalSection } from './components/JournalSection';
 import { Project, User } from './types';
 import { projectsApi } from './services/api';
 import { authApi, getStoredToken, getStoredUser, clearStoredAuth } from './services/api';
@@ -133,7 +133,7 @@ export default function App() {
     // Only run scroll observer on home page
     if (location.pathname !== '/') return;
 
-    const sectionIds = ['projects', 'services', 'home', 'footer'];
+    const sectionIds = ['projects', 'services', 'journal', 'home', 'footer'];
 
     const handleScrollObserver = () => {
       const scrollPosition = window.scrollY + 220;
@@ -188,6 +188,11 @@ export default function App() {
       if (currentUser) setIsDashboardOpen(true);
       return;
     }
+    // journal// on same page
+    if (sectionId === 'journal') {
+          sectionId = 'journal';
+    }
+    
     if (sectionId === 'about') {
       sectionId = 'footer';
     }
@@ -306,6 +311,7 @@ export default function App() {
             }
           />
 
+
           {/* Project detail as a full page: /project/:id */}
           <Route
             path="/project/:id"
@@ -316,6 +322,14 @@ export default function App() {
             }
           />
         </Routes>
+        <Route
+            path="/journal"
+            element={
+              <div className="pt-24 min-h-screen">
+                <JournalSection />
+              </div>
+            }
+          />
       </main>
     
       {/* Footer */}
