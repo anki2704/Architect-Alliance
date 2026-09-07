@@ -321,8 +321,7 @@ export default function App() {
               </div>
             }
           />
-        </Routes>
-        <Route
+          <Route
             path="/journal"
             element={
               <div className="pt-24 min-h-screen">
@@ -330,6 +329,7 @@ export default function App() {
               </div>
             }
           />
+        </Routes>
       </main>
     
       {/* Footer */}
