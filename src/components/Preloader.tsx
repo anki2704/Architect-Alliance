@@ -154,7 +154,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
                       opacity: 1,
                     }}
                     transition={{
-                      duration: 0.95,
+                      duration: 1.5,
                       delay,
                       ease: [0.76, 0, 0.24, 1], // strong cinematic ease
                     }}
