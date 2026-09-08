@@ -19,6 +19,7 @@ import {
   ApiError
 } from '../services/api';
 import { ProjectDetailView } from './ProjectDetailView';
+import { AddJournalModal } from './AddJournalModal';
 import {
   Calendar,
   Mail,
@@ -94,6 +95,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   /** Red dot hides after panel is opened; returns only when new items arrive. */
   const [notifSeenCount, setNotifSeenCount] = useState(0);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<JournalArticle | null>(null);
 
   const [isAddingDesigner, setIsAddingDesigner] = useState(false);
   const [newDesignerName, setNewDesignerName] = useState('');
@@ -218,6 +221,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (selectedProject?.id === id) setSelectedProject(null);
     } catch (err) {
       alert('Could not delete project.');
+    }
+  };
+
+  const handleDeleteJournalArticle = async (id: string, title: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Delete article "${title}"?`)) return;
+    try {
+      await journalApi.remove(id);
+      setJournal((prev) => prev.filter((a) => a.id !== id));
+    } catch (err) {
+      alert('Could not delete article.');
     }
   };
 
@@ -895,8 +909,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* ════ JOURNAL ════ */}
               {activeNav === 'journal' && (
                 <div className="space-y-4">
-                  <h1 className="font-serif-display text-2xl font-bold">Journal</h1>
-                  <p className="text-xs text-[var(--text-muted)]">Articles from the site journal</p>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h1 className="font-serif-display text-2xl font-bold">Journal</h1>
+                      <p className="text-xs text-[var(--text-muted)]">Articles from the site journal</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingArticle(null);
+                        setIsJournalModalOpen(true);
+                      }}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--accent-warm)] transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Article
+                    </button>
+                  </div>
                   {journal.length === 0 ? (
                     <p className="text-sm text-slate-500 py-8 text-center">No journal posts yet.</p>
                   ) : (
@@ -904,7 +933,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {journal.map((a) => (
                         <article
                           key={a.id}
-                          className="rounded-2xl border border-[var(--text-primary)]/10 bg-[var(--bg-card)]/5 overflow-hidden flex flex-col sm:flex-row"
+                          onClick={() => {
+                            setEditingArticle(a);
+                            setIsJournalModalOpen(true);
+                          }}
+                          className="rounded-2xl border border-[var(--text-primary)]/10 bg-[var(--bg-card)]/5 overflow-hidden flex flex-col sm:flex-row cursor-pointer hover:border-[var(--accent-warm)]/40 transition-colors group"
                         >
                           {a.image && (
                             <img
@@ -913,15 +946,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               className="sm:w-36 h-28 sm:h-auto object-cover shrink-0 bg-[var(--bg-card)]"
                             />
                           )}
-                          <div className="p-4 min-w-0">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-warm)]">
-                              {a.category} · {a.readTime}
-                            </span>
-                            <h3 className="font-semibold text-sm text-[var(--text-primary)] mt-1">{a.title}</h3>
-                            <p className="text-[11px] text-[var(--text-muted)] mt-1 line-clamp-2">{a.excerpt}</p>
-                            <p className="text-[10px] text-slate-500 mt-2">
-                              {a.author} · {a.date}
-                            </p>
+                          <div className="p-4 min-w-0 flex-1 flex flex-col justify-between">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-warm)]">
+                                {a.category} · {a.readTime}
+                              </span>
+                              <h3 className="font-semibold text-sm text-[var(--text-primary)] mt-1">{a.title}</h3>
+                              <p className="text-[11px] text-[var(--text-muted)] mt-1 line-clamp-2">{a.excerpt}</p>
+                              <p className="text-[10px] text-slate-500 mt-2">
+                                {a.author} · {a.date}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-warm)]">
+                                Click to edit
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteJournalArticle(a.id, a.title, e)}
+                                className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-400 cursor-pointer"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Delete
+                              </button>
+                            </div>
                           </div>
                         </article>
                       ))}
@@ -1080,6 +1128,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           onSelectProject={(p) => setSelectedProject(p)}
         />
       )}
+
+      {/* Add / edit journal article overlay */}
+      <AddJournalModal
+        isOpen={isJournalModalOpen}
+        article={editingArticle}
+        onClose={() => {
+          setIsJournalModalOpen(false);
+          setEditingArticle(null);
+        }}
+        onCreated={(article) => setJournal((prev) => [article, ...prev])}
+        onUpdated={(article) =>
+          setJournal((prev) => prev.map((a) => (a.id === article.id ? article : a)))
+        }
+      />
     </div>
   );
 };
