@@ -177,7 +177,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
               className="mt-7"
             >
               <h1 className="font-serif-display text-5xl sm:text-6xl xl:text-8xl font-extrabold tracking-tight leading-[1.02]">
-                We Design Spaces
+                We Design 
                 <br />
                 <span className="italic text-[var(--accent-amber)]">That Inspire &amp; Elevate</span>
               </h1>
