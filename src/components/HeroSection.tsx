@@ -104,7 +104,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
           src={currentHero.url}
           alt={currentHero.title}
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: 'center center', imageRendering: 'auto' }}
+          style={{ objectPosition: '75% center', imageRendering: 'auto' }}
         />
         {/* Light overlay only — keep image bright & visible */}
         <div className="absolute inset-0 bg-gradient-to-r from-white/15 via-white/5 to-transparent pointer-events-none" />
