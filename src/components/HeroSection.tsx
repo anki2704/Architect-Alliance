@@ -22,6 +22,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const imageLayerRef = useRef<HTMLDivElement>(null);
   const contentLayerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+
   /*
   // Auto-advance the background photography
   useEffect(() => {
@@ -31,7 +32,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     return () => clearInterval(timer);
   }, []);
   */
+
   // GSAP mouse-parallax: image drifts opposite to cursor, content drifts subtly with it
+  // Disabled on touch devices + reduced-motion to avoid jank on mobile
   useEffect(() => {
     const section = sectionRef.current;
     const imageLayer = imageLayerRef.current;
@@ -40,7 +43,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     if (!section || !imageLayer || !contentLayer) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (prefersReducedMotion || isTouchDevice) return;
 
     const xImage = gsap.quickTo(imageLayer, 'x', { duration: 1.4, ease: 'power3.out' });
     const yImage = gsap.quickTo(imageLayer, 'y', { duration: 1.4, ease: 'power3.out' });
@@ -103,8 +107,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         <img
           src={currentHero.url}
           alt={currentHero.title}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: '75% center', imageRendering: 'auto' }}
+          className="absolute inset-0 w-full h-full object-cover object-[center_center] sm:object-[55%_center] lg:object-[75%_center]"
+          style={{ imageRendering: 'auto' }}
+          loading="eager"
+          fetchPriority="high"
         />
         {/* Light overlay only — keep image bright & visible */}
         <div className="absolute inset-0 bg-gradient-to-r from-white/15 via-white/5 to-transparent pointer-events-none" />
