@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, BookOpen, Clock } from 'lucide-react';
 import { JournalArticle } from '../types';
 import { journalApi } from '../services/api';
 
 export const JournalSection: React.FC = () => {
+  const navigate = useNavigate();
   const [articles, setArticles] = useState<JournalArticle[]>([]);
 
   useEffect(() => {
@@ -17,7 +19,12 @@ export const JournalSection: React.FC = () => {
   if (articles.length === 0) return null;
 
   const featuredArticle = articles[0];
-  const secondaryArticles = articles.slice(1);
+  // Only the next 3 articles sit beside the featured card so the right
+  // column stays roughly the same height as it. Anything beyond that
+  // (i.e. once you have 5+ articles) flows into the grid below instead
+  // of making this column grow forever.
+  const sidebarArticles = articles.slice(1, 4);
+  const gridArticles = articles.slice(4);
 
   return (
     <section id="journal" className="py-28 bg-[var(--bg-main)] text-[var(--text-primary)] relative overflow-hidden border-t border-[var(--text-primary)]/10">
@@ -48,6 +55,7 @@ export const JournalSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             data-cursor="ARTICLE"
+            onClick={() => navigate(`/journal/${featuredArticle.id}`)}
             className="lg:col-span-7 glass-card rounded-3xl overflow-hidden border border-[var(--text-primary)]/15 shadow-xl hover:shadow-2xl transition-all duration-300 group flex flex-col justify-between cursor-pointer"
           >
             <div className="relative h-72 sm:h-96 overflow-hidden">
@@ -95,7 +103,7 @@ export const JournalSection: React.FC = () => {
 
           {/* Right Column Stacked List */}
           <div className="lg:col-span-5 flex flex-col gap-6 justify-between">
-            {secondaryArticles.map((art, idx) => (
+            {sidebarArticles.map((art, idx) => (
               <motion.div
                 key={art.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -103,6 +111,7 @@ export const JournalSection: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                 data-cursor="ARTICLE"
+                onClick={() => navigate(`/journal/${art.id}`)}
                 className="glass-card p-6 rounded-3xl border border-[var(--text-primary)]/15 shadow-sm hover:shadow-lg transition-all duration-300 group flex items-start gap-5 cursor-pointer bg-[var(--bg-card)]"
               >
                 <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 border border-[var(--text-primary)]/10">
@@ -135,6 +144,51 @@ export const JournalSection: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Overflow Grid — everything after the featured + first 3 sidebar articles */}
+        {gridArticles.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {gridArticles.map((art, idx) => (
+              <motion.div
+                key={art.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                data-cursor="ARTICLE"
+                onClick={() => navigate(`/journal/${art.id}`)}
+                className="glass-card rounded-3xl overflow-hidden border border-[var(--text-primary)]/15 shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer bg-[var(--bg-card)] flex flex-col"
+              >
+                <div className="h-44 overflow-hidden">
+                  <img
+                    src={art.image}
+                    alt={art.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="p-5 flex flex-col justify-between flex-1">
+                  <div>
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--text-muted)] mb-1">
+                      <span className="text-[var(--accent-warm)] font-bold uppercase">{art.category}</span>
+                      <span>•</span>
+                      <span>{art.readTime}</span>
+                    </div>
+
+                    <h4 className="font-serif-display text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors leading-snug line-clamp-2 mb-2">
+                      {art.title}
+                    </h4>
+                  </div>
+
+                  <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[var(--accent-warm)] group-hover:text-[var(--text-primary)] transition-colors mt-1">
+                    <span>Read More</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -17,6 +17,7 @@ import { Footer } from './components/Footer';
 import { ProjectDetailView } from './components/ProjectDetailView';
 import { AdminLogin } from './components/AdminLogin';
 import { JournalSection } from './components/JournalSection';
+import { JournalArticlePage } from './components/JournalArticlePage';
 import { Project, User } from './types';
 import { projectsApi } from './services/api';
 import { authApi, getStoredToken, getStoredUser, clearStoredAuth } from './services/api';
@@ -188,11 +189,6 @@ export default function App() {
       if (currentUser) setIsDashboardOpen(true);
       return;
     }
-    // journal// on same page
-    if (sectionId === 'journal') {
-          sectionId = 'journal';
-    }
-    
     if (sectionId === 'about') {
       sectionId = 'footer';
     }
@@ -206,6 +202,12 @@ export default function App() {
     if (sectionId === 'team') {
       navigate('/team');
       setActiveSection('team');
+      return;
+    }
+    // journal → open as a separate page
+    if (sectionId === 'journal') {
+      navigate('/journal');
+      setActiveSection('journal');
       return;
     }
 
@@ -310,22 +312,29 @@ export default function App() {
               </div>
             }
           />
-
-
+          <Route
+            path="/journal"
+            element={
+              <div className="pt-24 min-h-screen">
+                <JournalSection />
+              </div>
+            }
+          />
+          {/* Journal article detail as a full page: /journal/:id */}
+          <Route
+            path="/journal/:id"
+            element={
+              <div className="pt-24 min-h-screen">
+                <JournalArticlePage />
+              </div>
+            }
+          />
           {/* Project detail as a full page: /project/:id */}
           <Route
             path="/project/:id"
             element={
               <div className="pt-24 min-h-screen">
                 <ProjectDetailPage projects={projects} />
-              </div>
-            }
-          />
-          <Route
-            path="/journal"
-            element={
-              <div className="pt-24 min-h-screen">
-                <JournalSection />
               </div>
             }
           />

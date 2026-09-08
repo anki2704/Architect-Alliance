@@ -160,7 +160,13 @@ export const testimonialsApi = {
 
 // ---- Journal ----
 export const journalApi = {
-  list: () => apiFetch<JournalArticle[]>('/journal')
+  list: () => apiFetch<JournalArticle[]>('/journal'),
+  get: (id: string) => apiFetch<JournalArticle>(`/journal/${id}`),
+  create: (data: Partial<JournalArticle>) =>
+    apiFetch<JournalArticle>('/journal', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<JournalArticle>) =>
+    apiFetch<JournalArticle>(`/journal/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  remove: (id: string) => apiFetch<void>(`/journal/${id}`, { method: 'DELETE' })
 };
 
 // ---- Bookings ----
