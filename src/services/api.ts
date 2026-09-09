@@ -11,6 +11,11 @@ import type {
 const TOKEN_KEY = 'architech_token';
 const USER_KEY = 'architech_user';
 
+// ====================== IMPORTANT ======================
+// Production mein Render URL use hoga, local mein blank (same domain)
+const API_BASE = import.meta.env.VITE_API_URL || '';
+// =======================================================
+
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -51,14 +56,14 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`/api${path}`, { ...options, headers });
+  // Changed: ab API_BASE use ho raha hai
+  const res = await fetch(`${API_BASE}/api${path}`, { ...options, headers });
 
   if (res.status === 204) return undefined as T;
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // An expired/invalid token — clear it so the UI drops back to logged-out state.
     if (res.status === 401) clearStoredAuth();
     throw new ApiError(data.error || `Request failed (${res.status})`, res.status);
   }
@@ -73,15 +78,16 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ name, email, password, phone })
     }),
+
   login: async (email: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
+    // Changed: API_BASE use kiya
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) return data as { user: User; token: string };
-    // Preserve requiresOtp for locked accounts (HTTP 403)
     if (data.requiresOtp) {
       return data as {
         requiresOtp: true;
@@ -93,11 +99,13 @@ export const authApi = {
     }
     throw new ApiError(data.error || `Request failed (${res.status})`, res.status);
   },
+
   verifyOtp: (email: string, otp: string) =>
     apiFetch<{ user: User; token: string }>('/auth/verify-otp', {
       method: 'POST',
       body: JSON.stringify({ email, otp })
     }),
+
   forgotPassword: (email: string) =>
     apiFetch<{ message: string; email?: string; emailSent?: boolean; devOtp?: string }>(
       '/auth/forgot-password',
@@ -106,6 +114,7 @@ export const authApi = {
         body: JSON.stringify({ email })
       }
     ),
+
   resendLoginOtp: (email: string) =>
     apiFetch<{ message: string; email?: string; emailSent?: boolean; devOtp?: string }>(
       '/auth/resend-login-otp',
@@ -114,12 +123,15 @@ export const authApi = {
         body: JSON.stringify({ email })
       }
     ),
+
   resetPassword: (email: string, otp: string, newPassword: string) =>
     apiFetch<{ message: string }>('/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ email, otp, newPassword })
     }),
+
   me: () => apiFetch<{ user: User }>('/auth/me'),
+
   logout: () =>
     apiFetch<{ message: string }>('/auth/logout', {
       method: 'POST',
@@ -131,13 +143,14 @@ export const authApi = {
 export const projectsApi = {
   list: () => apiFetch<Project[]>('/projects'),
   get: (id: string) => apiFetch<Project>(`/projects/${id}`),
-  create: (data: Partial<Project>) => apiFetch<Project>('/projects', { method: 'POST', body: JSON.stringify(data) }),
+  create: (data: Partial<Project>) =>
+    apiFetch<Project>('/projects', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Project>) =>
     apiFetch<Project>(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   remove: (id: string) => apiFetch<void>(`/projects/${id}`, { method: 'DELETE' })
 };
 
-// ---- Upload (base64 image → saved file URL) ----
+// ---- Upload ----
 export const uploadApi = {
   image: (imageDataUrl: string, filename?: string) =>
     apiFetch<{ url: string }>('/upload', {
@@ -172,7 +185,8 @@ export const journalApi = {
 // ---- Bookings ----
 export const bookingsApi = {
   list: () => apiFetch<Booking[]>('/bookings'),
-  create: (data: Partial<Booking>) => apiFetch<Booking>('/bookings', { method: 'POST', body: JSON.stringify(data) }),
+  create: (data: Partial<Booking>) =>
+    apiFetch<Booking>('/bookings', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Booking>) =>
     apiFetch<Booking>(`/bookings/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 };
