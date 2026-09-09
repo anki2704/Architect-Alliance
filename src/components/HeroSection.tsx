@@ -34,30 +34,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   }, []);
   */
 
-  // Responsive object-position:
-  // Desktop → 75% center (exactly as you have now - perfect)
-  // Mobile  → adjusted so architecture stays nicely in frame
-  useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
-
-    const setObjectPosition = () => {
-      if (window.innerWidth < 768) {
-        // Mobile portrait
-        img.style.objectPosition = '58% 42%';
-      } else if (window.innerWidth < 1024) {
-        // Tablet
-        img.style.objectPosition = '68% center';
-      } else {
-        // Desktop — keep your current perfect framing
-        img.style.objectPosition = '75% center';
-      }
-    };
-
-    setObjectPosition();
-    window.addEventListener('resize', setObjectPosition);
-    return () => window.removeEventListener('resize', setObjectPosition);
-  }, []);
+  // Responsive object-position is handled purely via CSS (see the <img> className
+  // below: object-[58%_42%] md:object-[68%_50%] lg:object-[75%_50%]).
+  // This avoids the old JS/resize-event approach, which applied the crop only
+  // AFTER mount (causing a visible jump on load) and could get out of sync
+  // during mobile browser-chrome resize events (address bar show/hide),
+  // which is what was causing the inconsistent crop/shift on mobile.
 
   // GSAP mouse-parallax — only desktop
   useEffect(() => {
@@ -129,7 +111,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     <section
       ref={sectionRef}
       id="home"
-      className="sticky top-0 z-0 h-screen min-h-[720px] w-full overflow-hidden bg-[#F7F6F4] text-[var(--text-primary)]"
+      className="sticky top-0 z-0 h-dvh min-h-[480px] lg:min-h-[720px] w-full overflow-hidden bg-[#F7F6F4] text-[var(--text-primary)]"
     >
       {/* Layer 1: Background Photography */}
       <div ref={imageLayerRef} className="absolute inset-0 will-change-transform">
@@ -137,7 +119,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
           ref={imgRef}
           src={currentHero.url}
           alt={currentHero.title}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-[58%_42%] md:object-[68%_50%] lg:object-[75%_50%]"
           style={{ imageRendering: 'auto' }}
           loading="eager"
           fetchPriority="high"
