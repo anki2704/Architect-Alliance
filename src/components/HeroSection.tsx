@@ -5,6 +5,14 @@ import gsap from 'gsap';
 
 interface HeroSectionProps {
   onNavigate: (sectionId: string) => void;
+  /**
+   * Home page ka "second page" — jo bhi section yahan pass karoge (Projects,
+   * ya future me koi aur section), wo neeche diye gaye reveal wrapper me
+   * daala jayega aur scroll par sticky Hero ke upar "curtain" ki tarah
+   * slide-up hoga. Ye behaviour is component ke andar hi fixed hai, isliye
+   * section badalne par bhi slider apne aap wahi ka wahi bana rahega.
+   */
+  children?: React.ReactNode;
 }
 
 const HERO_IMAGES = [
@@ -16,7 +24,7 @@ const HERO_IMAGES = [
   },
 ]
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, children }) => {
   const [activeImgIdx, setActiveImgIdx] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
   const imageLayerRef = useRef<HTMLDivElement>(null);
@@ -108,6 +116,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
   const currentHero = HERO_IMAGES[activeImgIdx];
 
   return (
+    <>
     <section
       ref={sectionRef}
       id="home"
@@ -186,5 +195,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
         </div>
       </div>
     </section>
+
+    {/* Reveal wrapper: puts the "second page" section right after the
+       sticky Hero, with an opaque background + z-10 so it slides up from
+       the bottom and covers the Hero on scroll — no matter which section
+       is passed in as children. */}
+    {children && (
+      <div className="relative z-10 bg-[var(--bg-main)]">
+        {children}
+      </div>
+    )}
+    </>
   );
 };
