@@ -115,11 +115,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     >
       {/* Layer 1: Background Photography */}
       <div ref={imageLayerRef} className="absolute inset-0 will-change-transform">
+        {/* Same source image on every breakpoint. The image itself is a wide
+           2:1 banner with the house sitting in roughly the right 60% of the
+           frame — on a tall/narrow mobile screen, object-cover has to zoom
+           in a lot, so object-position has to be tuned to the house's actual
+           position (72% across), not the desktop framing (75%, which was
+           tuned for a much wider visible window and happened to look
+           different once cropped this tightly). */}
         <img
           ref={imgRef}
           src={currentHero.url}
           alt={currentHero.title}
-          className="absolute inset-0 w-full h-full object-cover object-[58%_42%] md:object-[68%_50%] lg:object-[75%_50%]"
+          className="absolute inset-0 w-full h-full object-cover object-[72%_center] lg:object-[75%_center]"
           style={{ imageRendering: 'auto' }}
           loading="eager"
           fetchPriority="high"
