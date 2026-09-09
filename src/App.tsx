@@ -215,6 +215,12 @@ export default function App() {
     if (location.pathname !== '/') {
       navigate('/');
     }
+    // PROJECTS → open as a separate page
+    if (sectionId === 'projects') {
+      navigate('/projects');
+      setActiveSection('projects');
+      return;
+    }
 
     setActiveSection(sectionId);
 
@@ -289,16 +295,10 @@ export default function App() {
             element={
               <>
                 <div className="relative">
-                  <HeroSection onNavigate={handleNavigate} />
-                  <ProjectGallery
-                    projects={projects}
-                    currentUser={currentUser}
-                    onProjectCreated={(newProject) => setProjects((prev) => [newProject, ...prev])}
-                    onProjectDeleted={(id) => setProjects((prev) => prev.filter((p) => p.id !== id))}
-                  />
+                  <HeroSection onNavigate={handleNavigate}>
+                    <ServicesSection />
+                  </HeroSection>
                 </div>
-                <IsometricFloorPlanViewer isAdmin={currentUser?.role === 'admin'} onEnquire={() => setIsEnquiryOpen(true)}/>
-                <ServicesSection />
                 <TestimonialsSection />
               </>
             }
@@ -326,6 +326,24 @@ export default function App() {
             element={
               <div className="pt-24 min-h-screen">
                 <JournalArticlePage />
+              </div>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <div className="pt-24 min-h-screen">
+                <ProjectGallery
+                  projects={projects}
+                  currentUser={currentUser}
+                  onProjectCreated={(newProject) => setProjects((prev) => [newProject, ...prev])}
+                  onProjectDeleted={(id) => setProjects((prev) => prev.filter((p) => p.id !== id))}
+                />
+                {/*gallery ke just neeche */}
+                <IsometricFloorPlanViewer
+                  isAdmin={currentUser?.role === 'admin'}
+                  onEnquire={() => setIsEnquiryOpen(true)}
+                />
               </div>
             }
           />
