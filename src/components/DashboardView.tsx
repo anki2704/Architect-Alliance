@@ -39,8 +39,11 @@ import {
   ChevronDown,
   Eye,
   Star,
-  MapPin
+  MapPin,
+  Download,
+  X
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface DashboardViewProps {
   isOpen: boolean;
@@ -95,6 +98,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   /** Red dot hides after panel is opened; returns only when new items arrive. */
   const [notifSeenCount, setNotifSeenCount] = useState(0);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<JournalArticle | null>(null);
 
@@ -170,6 +174,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     } catch (e) {
       console.error('Error assigning designer', e);
     }
+  };
+
+  const handleExportEnquiries = () => {
+    if (messages.length === 0) return;
+    const rows = messages.map((m) => ({
+      Name: m.name,
+      Email: m.email,
+      Contact: m.contact || '',
+      Subject: m.subject || '',
+      Message: m.message,
+      Date: new Date(m.createdAt).toLocaleString()
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    worksheet['!cols'] = [
+      { wch: 20 }, // Name
+      { wch: 28 }, // Email
+      { wch: 16 }, // Contact
+      { wch: 22 }, // Subject
+      { wch: 60 }, // Message
+      { wch: 20 } // Date
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enquiries');
+    const stamp = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(workbook, `enquiries-${stamp}.xlsx`);
   };
 
   const handleAddDesigner = async (e: React.FormEvent) => {
@@ -739,38 +768,121 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* ════ ENQUIRIES ════ */}
               {activeNav === 'enquiries' && role === 'admin' && (
                 <div className="space-y-4">
-                  <h1 className="font-serif-display text-2xl font-bold">Contact Enquiries</h1>
-                  <div className="rounded-2xl border border-[var(--text-primary)]/10 overflow-hidden">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <h1 className="font-serif-display text-2xl font-bold">Contact Enquiries</h1>
+                    <button
+                      type="button"
+                      onClick={handleExportEnquiries}
+                      disabled={messages.length === 0}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--bg-card)]/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export to Excel
+                    </button>
+                  </div>
+                  <div className="rounded-2xl border border-[var(--text-primary)]/10 overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="bg-[var(--bg-card)]/10 text-[var(--text-secondary)] uppercase font-bold tracking-wider">
                           <th className="p-3">Sender</th>
                           <th className="p-3">Email</th>
+                          <th className="p-3">Contact</th>
                           <th className="p-3">Subject</th>
                           <th className="p-3">Message</th>
+                          <th className="p-3">Date</th>
+                          <th className="p-3"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/10">
                         {messages.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="p-8 text-center text-slate-500">
+                            <td colSpan={7} className="p-8 text-center text-slate-500">
                               No contact inquiries recorded.
                             </td>
                           </tr>
                         ) : (
                           messages.map((m) => (
                             <tr key={m.id} className="hover:bg-[var(--bg-card)]/5">
-                              <td className="p-3 font-semibold">{m.name}</td>
-                              <td className="p-3 text-[var(--text-muted)]">{m.email}</td>
-                              <td className="p-3">{m.subject || '—'}</td>
+                              <td className="p-3 font-semibold whitespace-nowrap">{m.name}</td>
+                              <td className="p-3 text-[var(--text-muted)] whitespace-nowrap">{m.email}</td>
+                              <td className="p-3 text-[var(--text-muted)] whitespace-nowrap">{m.contact || '—'}</td>
+                              <td className="p-3 whitespace-nowrap">{m.subject || '—'}</td>
                               <td className="p-3 max-w-xs text-[var(--text-secondary)]">
-                                <p className="line-clamp-3">{m.message}</p>
+                                <p className="line-clamp-2">{m.message}</p>
+                              </td>
+                              <td className="p-3 text-[var(--text-muted)] whitespace-nowrap">
+                                {new Date(m.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="p-3">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedMessage(m)}
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg border border-[var(--text-primary)]/15 text-[10px] font-bold uppercase hover:bg-[var(--bg-card)]/10 cursor-pointer whitespace-nowrap"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  View
+                                </button>
                               </td>
                             </tr>
                           ))
                         )}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              )}
+
+              {selectedMessage && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                  onClick={() => setSelectedMessage(null)}
+                >
+                  <div
+                    className="w-full max-w-lg rounded-2xl bg-[var(--bg-card)] border border-[var(--text-primary)]/15 shadow-2xl p-5 space-y-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="font-serif-display text-lg font-bold">Enquiry Details</h2>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMessage(null)}
+                        className="p-1 rounded-full hover:bg-[var(--bg-card)]/10 cursor-pointer"
+                      >
+                        <X className="w-4 h-4 text-[var(--text-muted)]" />
+                      </button>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-[var(--text-muted)] uppercase font-bold tracking-wider">Name</span>
+                        <span className="text-right">{selectedMessage.name}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-[var(--text-muted)] uppercase font-bold tracking-wider">Email</span>
+                        <span className="text-right">{selectedMessage.email}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-[var(--text-muted)] uppercase font-bold tracking-wider">Contact</span>
+                        <span className="text-right">{selectedMessage.contact || '—'}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-[var(--text-muted)] uppercase font-bold tracking-wider">Subject</span>
+                        <span className="text-right">{selectedMessage.subject || '—'}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-[var(--text-muted)] uppercase font-bold tracking-wider">Date</span>
+                        <span className="text-right">
+                          {new Date(selectedMessage.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="pt-2 border-t border-[var(--text-primary)]/10">
+                        <span className="text-[var(--text-muted)] uppercase font-bold tracking-wider block mb-1">
+                          Message
+                        </span>
+                        <p className="text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">
+                          {selectedMessage.message}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
