@@ -6,11 +6,22 @@ interface PreloaderProps {
 }
 
 const LOGO_SRC = '/images/brand/preloader.png';
-const GRID = 4;
-const SHUTTER_SLATS = 12; // more slats = smoother, premium feel
+
+// Lighter grid/slat counts on small screens — the 4x4 grid (16 individually
+// spring-animated, background-image-sliced tiles) plus 12 box-shadowed
+// shutter slats is expensive to paint on mid/low-end mobile GPUs and was
+// causing the preloader to jank/stall on phones while running fine on
+// desktop. Scaling both down on narrow viewports fixes that without
+// changing how it looks on laptop/desktop.
+const isMobileViewport = () =>
+  typeof window !== 'undefined' && window.innerWidth < 768;
 
 export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const [phase, setPhase] = useState<'reveal' | 'hold' | 'shutter' | 'finished'>('reveal');
+  const [isMobile, setIsMobile] = useState(isMobileViewport);
+
+  const GRID = isMobile ? 3 : 4;
+  const SHUTTER_SLATS = isMobile ? 6 : 12;
 
   const pieceOffsets = useMemo(() => {
     return Array.from({ length: GRID * GRID }, () => ({
@@ -19,25 +30,59 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
       rotate: (Math.random() - 0.5) * 220,
       scale: 0.35 + Math.random() * 0.4,
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [GRID]);
+
+  useEffect(() => {
+    setIsMobile(isMobileViewport());
   }, []);
 
   useEffect(() => {
-    // 1. Logo assemble finishes
-    const holdTimer = setTimeout(() => setPhase('hold'), 2000);
+    // The logo image (~600KB) has to finish downloading before the tiles
+    // have anything to show. On a slow mobile connection the fixed timers
+    // below could fire before the image arrives, leaving blank tiles that
+    // looked "stuck". Preload it and only start the reveal once it's ready
+    // (capped at 1.5s so a very slow network never blocks the site).
+    let cancelled = false;
+    const img = new Image();
+    const startTimer = window.setTimeout(() => {
+      if (!cancelled) beginSequence();
+    }, 1500);
 
-    // 2. Short elegant hold on the assembled logo
-    const shutterTimer = setTimeout(() => setPhase('shutter'), 2600);
+    img.onload = () => {
+      if (cancelled) return;
+      window.clearTimeout(startTimer);
+      beginSequence();
+    };
+    img.onerror = () => {
+      if (cancelled) return;
+      window.clearTimeout(startTimer);
+      beginSequence();
+    };
+    img.src = LOGO_SRC;
 
-    // 3. Shutter finishes → unmount + call onComplete
-    const finishTimer = setTimeout(() => {
-      setPhase('finished');
-      onComplete();
-    }, 4000);
+    let holdTimer: number;
+    let shutterTimer: number;
+    let finishTimer: number;
+
+    function beginSequence() {
+      // 1. Logo assemble finishes
+      holdTimer = window.setTimeout(() => setPhase('hold'), 2000);
+      // 2. Short elegant hold on the assembled logo
+      shutterTimer = window.setTimeout(() => setPhase('shutter'), 2600);
+      // 3. Shutter finishes → unmount + call onComplete
+      finishTimer = window.setTimeout(() => {
+        setPhase('finished');
+        onComplete();
+      }, 4000);
+    }
 
     return () => {
-      clearTimeout(holdTimer);
-      clearTimeout(shutterTimer);
-      clearTimeout(finishTimer);
+      cancelled = true;
+      window.clearTimeout(startTimer);
+      window.clearTimeout(holdTimer);
+      window.clearTimeout(shutterTimer);
+      window.clearTimeout(finishTimer);
     };
   }, [onComplete]);
 
@@ -91,6 +136,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
                           backgroundSize: `${GRID * 100}% ${GRID * 100}%`,
                           backgroundPosition: `${posX}% ${posY}%`,
                           backgroundRepeat: 'no-repeat',
+                          willChange: 'transform, opacity',
                         }}
                         initial={{
                           x: offset.x,
@@ -140,8 +186,12 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
                       height: `calc(100% / ${SHUTTER_SLATS} + 3px)`,
                       top: `calc(${i} * 100% / ${SHUTTER_SLATS})`,
                       backgroundColor: '#FAF8F5',
-                      boxShadow:
-                        '0 1px 0 rgba(0,0,0,0.06), inset 0 -1px 0 rgba(255,255,255,0.4)',
+                      // box-shadow is expensive to repaint on mobile GPUs when
+                      // animated on many elements at once — skip it there.
+                      boxShadow: isMobile
+                        ? 'none'
+                        : '0 1px 0 rgba(0,0,0,0.06), inset 0 -1px 0 rgba(255,255,255,0.4)',
+                      willChange: 'transform',
                     }}
                     initial={{
                       y: 0,
