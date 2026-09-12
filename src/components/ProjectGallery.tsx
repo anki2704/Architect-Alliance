@@ -1,9 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Project, ProjectCategory, User } from '../types';
-import { 
-  Eye, ArrowLeft, ArrowRight, Grid, MoveHorizontal, Heart, 
-  ArrowUpRight, Sparkles, Plus, Trash2
+import {
+  Eye, Grid, Layers, Heart, ArrowUpRight, Sparkles, Plus, Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AddProjectModal } from './AddProjectModal';
@@ -16,6 +15,12 @@ interface ProjectGalleryProps {
   onProjectDeleted?: (projectId: string) => void;
 }
 
+const smoothStep = (t: number) => t * t * (3 - 2 * t);
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+
+// Each project transition uses ~100vh of scroll (like the HTML reference)
+const VH_PER_SLIDE = 100;
+
 export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
   projects,
   currentUser,
@@ -25,7 +30,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
   const navigate = useNavigate();
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProjectCategory>('all');
-  const [viewMode, setViewMode] = useState<'scroller' | 'grid'>('scroller');
+  const [viewMode, setViewMode] = useState<'stack' | 'grid'>('stack');
   const [likesCount, setLikesCount] = useState<Record<string, number>>({
     'proj-1': 28,
     'proj-2': 42,
@@ -36,53 +41,24 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
   });
   const [userLiked, setUserLiked] = useState<Record<string, boolean>>({});
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<Array<HTMLElement | null>>([]);
 
   const categories: { id: ProjectCategory; label: string }[] = [
     { id: 'all', label: 'All Projects' },
     { id: 'residential', label: 'Residential' },
     { id: 'interior', label: 'Interior' },
-    { id: 'commercial', label: 'Commerial' },
-    /*{ id: 'sustainable', label: 'Sustainable' }*/
+    { id: 'commercial', label: 'Commercial' },
   ];
 
   const filteredProjects = selectedCategory === 'all'
     ? projects
     : projects.filter(p => p.category === selectedCategory);
 
-  // Mouse drag handlers for side scroller
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollContainerRef.current) return;
-    setIsMouseDown(true);
-    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
-  };
-
-  const handleMouseLeave = () => {
-    setIsMouseDown(false);
-  };
-
-  const handleMouseUp = () => {
-    setIsMouseDown(false);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isMouseDown || !scrollContainerRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2.0;
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-  };
-
-  const scrollHorizontal = (direction: 'left' | 'right') => {
-    if (!scrollContainerRef.current) return;
-    const scrollAmount = direction === 'left' ? -380 : 380;
-    scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-  };
+  const stackCount = filteredProjects.length;
+  // Total scroll height: first slide visible + (n-1) transitions
+  const stageHeightVh = stackCount > 1 ? stackCount * VH_PER_SLIDE : 100;
 
   const toggleLike = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -114,61 +90,114 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
 
   const isAdminOrDesigner = currentUser?.role === 'admin' || currentUser?.role === 'designer';
 
+  // Clean one-by-one slide transition (matches HTML reference)
+  const renderSlides = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage || stackCount <= 1) return;
+
+    const rect = stage.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const distance = stage.offsetHeight - vh;
+    const progress = distance > 0 ? clamp(-rect.top / distance, 0, 1) : 0;
+
+    const exact = progress * (stackCount - 1);
+    const index = Math.min(Math.floor(exact), stackCount - 1);
+    const t = index === stackCount - 1 ? 0 : smoothStep(exact - index);
+
+    slideRefs.current.forEach((slide, i) => {
+      if (!slide) return;
+
+      if (i === index) {
+        // Active: sliding up and out
+        slide.style.visibility = 'visible';
+        slide.style.transform = `translateY(${-t * 100}%)`;
+        slide.style.zIndex = '2';
+        slide.style.pointerEvents = t < 0.5 ? 'auto' : 'none';
+      } else if (i === index + 1) {
+        // Incoming: sliding up from below
+        slide.style.visibility = 'visible';
+        slide.style.transform = `translateY(${(1 - t) * 100}%)`;
+        slide.style.zIndex = '3';
+        slide.style.pointerEvents = t >= 0.5 ? 'auto' : 'none';
+      } else if (i < index) {
+        // Already passed
+        slide.style.visibility = 'hidden';
+        slide.style.transform = 'translateY(-100%)';
+        slide.style.zIndex = '1';
+        slide.style.pointerEvents = 'none';
+      } else {
+        // Not yet reached
+        slide.style.visibility = 'hidden';
+        slide.style.transform = 'translateY(100%)';
+        slide.style.zIndex = '1';
+        slide.style.pointerEvents = 'none';
+      }
+    });
+  }, [stackCount]);
+
+  useEffect(() => {
+    if (viewMode !== 'stack' || stackCount <= 1) return;
+
+    let frameId = requestAnimationFrame(function loop() {
+      renderSlides();
+      frameId = requestAnimationFrame(loop);
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [viewMode, stackCount, renderSlides]);
+
+  // Reset refs when filtered list changes
+  useEffect(() => {
+    slideRefs.current = slideRefs.current.slice(0, stackCount);
+  }, [stackCount]);
+
   return (
-    <section id="projects" className="py-20 lg:py-28 bg-[var(--bg-main)] text-[var(--text-primary)] relative overflow-hidden border-t border-[var(--text-primary)]/10">
-      
-      {/* Container - Video 1 Header & Layout */}
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        
-        {/* Top Header Bar matching Video 1 */}
+    <section
+      id="projects"
+      className="relative border-0 outline-none"
+      style={{ background: '#f4f4f1', color: '#fff', borderTop: 'none', boxShadow: 'none' }}
+    >
+      {/* ── Header area ── */}
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 pt-20 lg:pt-28 pb-10 relative z-10">
+
+        {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill border border-[var(--text-primary)]/10 text-[var(--text-primary)] text-xs font-mono tracking-widest uppercase shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-[var(--accent-warm)]" />
+          {/*<div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 text-white/80 text-xs font-mono tracking-widest uppercase">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Interactive Project Showcase</span>
-          </div>
+          </div>*/}
 
-          <div className="flex items-center gap-3 flex-wrap justify-end">
-            {/* Add Project — visible for admin (and designer) after login */}
-            {(currentUser?.role === 'admin' || currentUser?.role === 'designer') && (
-              <button
-                type="button"
-                onClick={() => setIsAddProjectOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent-warm)] text-[var(--text-on-accent)] hover:bg-[var(--text-primary)] text-xs font-mono tracking-widest uppercase transition-all cursor-pointer shadow-lg font-bold z-20 relative"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Project</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Hero Section Title & Tagline matching Video 1 */}
-        <div className="text-center max-w-3xl mx-auto mb-6">
-          <h2 className="font-serif-display text-4xl sm:text-6xl font-extrabold tracking-tight text-[var(--text-primary)] mb-3">
-            Bespoke Architecture Gallery
-          </h2>
-          <p className="text-base sm:text-lg text-[var(--text-secondary)] font-sans">
-            The building you deserve has never been built before.
-          </p>
-        </div>
-
-        {/* Admin toolbar — Add Project always visible here when logged in as admin */}
-        {(currentUser?.role === 'admin' || currentUser?.role === 'designer') && (
-          <div className="flex justify-center mb-8">
+          {(currentUser?.role === 'admin' || currentUser?.role === 'designer') && (
             <button
               type="button"
               onClick={() => setIsAddProjectOpen(true)}
-              className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-[var(--accent-warm)] text-[var(--text-on-accent)] hover:bg-[var(--text-primary)] text-sm font-mono tracking-widest uppercase transition-all cursor-pointer shadow-lg font-bold"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 text-black hover:bg-white text-xs font-mono tracking-widest uppercase transition-all cursor-pointer font-bold"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
               <span>Add Project</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* View Mode & Category Controls Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4 border-b border-[var(--text-primary)]/10 pb-6">
-          {/* Category Filter Tabs */}
+        {/* Title */}
+        <div className="text-center max-w-3xl mx-auto mb-10">
+          <h2
+            className="font-extrabold tracking-tight text-black mb-3 translate-y-[-80px]"
+            style={{
+              fontSize: 'clamp(90px, 20vw, 120px)',
+              letterSpacing: '-0.03em',
+              lineHeight: 0.88,
+            }}
+          >
+            PROJECTS
+          </h2>
+          {/*<p className="text-sm sm:text-base text-white/50 tracking-wide">
+            The building you deserve has never been built before.
+          </p>*/}
+        </div>
+
+        {/* Category + View controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 mb-2">
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
             {categories.map((cat) => (
               <button
@@ -176,8 +205,8 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-2 rounded-full text-xs font-mono tracking-widest uppercase transition-all whitespace-nowrap cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-[var(--text-primary)] text-[var(--text-on-accent)] font-bold shadow-md scale-105'
-                    : 'glass-pill text-[var(--text-secondary)] hover:bg-[var(--text-primary)]/10 hover:text-[var(--text-primary)]'
+                    ? 'bg-white text-black font-bold'
+                    : 'text-white/50 hover:text-white hover:bg-white/10 border border-white/10'
                 }`}
               >
                 {cat.label}
@@ -185,177 +214,252 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
             ))}
           </div>
 
-          {/* Scroller / Grid Switcher & Nav Buttons */}
-          <div className="flex items-center gap-3">
-            <div className="glass-pill p-1 rounded-full border border-[var(--text-primary)]/10 flex items-center space-x-1">
-              <button
-                onClick={() => setViewMode('scroller')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all cursor-pointer ${
-                  viewMode === 'scroller'
-                    ? 'bg-[var(--text-primary)] text-[var(--text-on-accent)] font-bold shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                <MoveHorizontal className="w-3.5 h-3.5" />
-                <span>Side Scroller</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all cursor-pointer ${
-                  viewMode === 'grid'
-                    ? 'bg-[var(--text-primary)] text-[var(--text-on-accent)] font-bold shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                <Grid className="w-3.5 h-3.5" />
-                <span>Grid View</span>
-              </button>
-            </div>
-
-            {viewMode === 'scroller' && (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => scrollHorizontal('left')}
-                  className="w-9 h-9 rounded-full glass-pill border border-[var(--text-primary)]/15 hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm"
-                  title="Scroll Left"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => scrollHorizontal('right')}
-                  className="w-9 h-9 rounded-full glass-pill border border-[var(--text-primary)]/15 hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-sm"
-                  title="Scroll Right"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+          <div className="flex items-center gap-1 p-1 rounded-full border border-white/10">
+            <button
+              onClick={() => setViewMode('stack')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all cursor-pointer ${
+                viewMode === 'stack'
+                  ? 'bg-white text-black font-bold'
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Scroll Through</span>
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all cursor-pointer ${
+                viewMode === 'grid'
+                  ? 'bg-white text-black font-bold'
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span>Grid View</span>
+            </button>
           </div>
         </div>
 
-        {/* MODE 1: CYLINDRICAL PARABOLIC SIDE-SCROLLER (Video 1 Exact Match) */}
-        {viewMode === 'scroller' ? (
-          <div className="relative group/scroller">
+        {viewMode === 'stack' && stackCount > 1 && (
+          <p className="text-center text-[11px] tracking-[0.18em] uppercase text-white/40 mb-6">
+            {/*Scroll slowly — each project replaces the previous one*/}
+          </p>
+        )}
+      </div>
+
+      {/* ── MODE 1: CLEAN ONE-BY-ONE STACK ── */}
+      {viewMode === 'stack' ? (
+        stackCount === 0 ? (
+          <div className="py-24 text-center text-white/40">
+            No projects to show in this category yet.
+          </div>
+        ) : stackCount === 1 ? (
+          /* Single project — no transition needed */
+          <div className="px-4 sm:px-6 lg:px-12 pb-20">
+            <div className="mx-auto" style={{ maxWidth: 1400 }}>
+              <SingleProjectCard
+                proj={filteredProjects[0]}
+                index={0}
+                total={1}
+                liked={!!userLiked[filteredProjects[0].id]}
+                likeCount={likesCount[filteredProjects[0].id] || 24}
+                isAdmin={isAdminOrDesigner}
+                onOpen={openProject}
+                onLike={toggleLike}
+                onDelete={handleDeleteProject}
+              />
+            </div>
+          </div>
+        ) : (
+          /* Multi-project scroll transition */
+          <div
+            ref={stageRef}
+            className="relative"
+            style={{ height: `${stageHeightVh}vh` }}
+          >
             <div
-              ref={scrollContainerRef}
-              onMouseDown={handleMouseDown}
-              onMouseLeave={handleMouseLeave}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-              className="flex items-center space-x-6 overflow-x-auto py-8 px-4 scrollbar-none cursor-grab active:cursor-grabbing select-none"
-              style={{ perspective: '1000px' }}
+              ref={stickyRef}
+              className="sticky top-0 h-screen overflow-hidden"
+              style={{ background: '#f4f4f1' }}
             >
               {filteredProjects.map((proj, idx) => {
-                const liked = userLiked[proj.id];
+                const liked = !!userLiked[proj.id];
                 const count = likesCount[proj.id] || 24;
 
                 return (
-                  <motion.div
+                  <article
                     key={proj.id}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: idx * 0.08 }}
+                    ref={(el) => { slideRefs.current[idx] = el; }}
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{
+                      padding: 'clamp(12px, 3vw, 50px)',
+                      visibility: idx === 0 ? 'visible' : 'hidden',
+                      transform: idx === 0 ? 'translateY(0)' : 'translateY(100%)',
+                      willChange: 'transform',
+                    }}
                     onClick={() => openProject(proj)}
-                    data-cursor="EXPLORE"
-                    className="flex-shrink-0 w-[260px] sm:w-[310px] md:w-[350px] group/card relative glass-card rounded-3xl overflow-hidden border border-[var(--text-primary)]/15 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-[var(--accent-warm)] cursor-pointer"
                   >
-                    {/* Top Card Badge & Like / Delete Buttons */}
-                    <div className="p-4 flex items-center justify-between border-b border-[var(--text-primary)]/10 bg-[var(--bg-card)]/40">
-                      <span className="text-[10px] font-mono tracking-widest text-[var(--text-primary)] uppercase font-bold">
-                        {proj.category}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        {isAdminOrDesigner && (
-                          <button
-                            onClick={(e) => handleDeleteProject(proj.id, proj.title, e)}
-                            className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-mono transition-all cursor-pointer bg-red-500/100/10 text-red-600 font-bold border border-red-500/30 hover:bg-red-500/100 hover:text-[var(--text-primary)]"
-                            title="Delete project"
+                    <div
+                      className="w-full grid grid-cols-1 md:grid-cols-[60%_40%] overflow-hidden cursor-pointer"
+                      style={{
+                        maxWidth: 1400,
+                        height: 'min(680px, calc(100vh - 100px))',
+                        background: '#000',
+                        border: '1px solid #292929',
+                        borderRadius: 22,
+                      }}
+                    >
+                      {/* Text side */}
+                      <div
+                        className="flex flex-col order-2 md:order-2"
+                        style={{ padding: 'clamp(22px, 3vw, 45px)' }}
+                      >
+                        <div className="flex items-center justify-between mb-6">
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: '#777',
+                              letterSpacing: '0.12em',
+                            }}
                           >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => toggleLike(proj.id, e)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono transition-all cursor-pointer ${
-                            liked
-                              ? 'bg-rose-500/10 text-rose-600 font-bold border border-rose-500/30'
-                              : 'bg-[var(--text-primary)]/5 text-[var(--text-secondary)] hover:bg-[var(--text-primary)]/10 border border-[var(--text-primary)]/10'
-                          }`}
+                            {String(idx + 1).padStart(2, '0')} / {String(stackCount).padStart(2, '0')}
+                          </span>
+
+                          <div className="flex items-center gap-1.5">
+                            {isAdminOrDesigner && (
+                              <button
+                                onClick={(e) => handleDeleteProject(proj.id, proj.title, e)}
+                                className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-mono transition-all cursor-pointer bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white"
+                                title="Delete project"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => toggleLike(proj.id, e)}
+                              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono transition-all cursor-pointer ${
+                                liked
+                                  ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                                  : 'bg-white/5 text-white/50 hover:bg-white/10 border border-white/10'
+                              }`}
+                            >
+                              <Heart className={`w-3 h-3 ${liked ? 'fill-rose-400 text-rose-400' : ''}`} />
+                              <span>{count}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <h3
+                          className="font-bold text-white"
+                          style={{
+                            fontSize: 'clamp(36px, 5vw, 72px)',
+                            lineHeight: 0.88,
+                            letterSpacing: '-0.06em',
+                            margin: 0,
+                          }}
                         >
-                          <Heart className={`w-3 h-3 ${liked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                          <span>{count}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Arched Vertical Image Card Frame (Video 1 style) */}
-                    <div className="relative aspect-[3/4] overflow-hidden bg-[var(--bg-elevated)]">
-                      <img
-                        src={proj.imageUrl}
-                        alt={proj.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
-                        draggable={false}
-                      />
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover/card:opacity-80 transition-opacity" />
-
-                      {/* Title & Location Overlay */}
-                      <div className="absolute bottom-4 left-4 right-4 text-[var(--text-primary)]">
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-primary)]/80 block mb-0.5">
-                          {proj.location}
-                        </span>
-                        <h3 className="font-serif-display font-bold text-lg sm:text-xl text-[var(--text-primary)] leading-tight group-hover/card:text-[var(--accent-warm)] transition-colors">
                           {proj.title}
                         </h3>
+
+                        <div className="flex flex-wrap gap-2 mt-6">
+                          <span
+                            className="text-[10px] px-2.5 py-2 rounded-md"
+                            style={{ background: '#242424', color: '#ccc' }}
+                          >
+                            {(proj.category || '').toUpperCase()}
+                          </span>
+                          {proj.location && (
+                            <span
+                              className="text-[10px] px-2.5 py-2 rounded-md"
+                              style={{ background: '#242424', color: '#ccc' }}
+                            >
+                              {proj.location.toUpperCase()}
+                            </span>
+                          )}
+                          {proj.year && (
+                            <span
+                              className="text-[10px] px-2.5 py-2 rounded-md"
+                              style={{ background: '#242424', color: '#ccc' }}
+                            >
+                              {String(proj.year).toUpperCase()}
+                            </span>
+                          )}
+                          {proj.areaSqFt && (
+                            <span
+                              className="text-[10px] px-2.5 py-2 rounded-md"
+                              style={{ background: '#242424', color: '#ccc' }}
+                            >
+                              {proj.areaSqFt}
+                            </span>
+                          )}
+                        </div>
+
+                        <p
+                          className="mt-auto text-[14px] leading-relaxed max-w-[420px]"
+                          style={{ color: '#aaa', marginTop: 'auto', paddingTop: 24 }}
+                        >
+                          {proj.description}
+                        </p>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openProject(proj);
+                          }}
+                          className="mt-5 w-max inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#444] text-white text-xs font-mono uppercase tracking-wider hover:bg-white hover:text-black hover:border-white transition-all cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          View project
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
                       </div>
 
-                      {/* Hover Open "View Project" Button with smooth expanding hover animation */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
-                        <span className="px-5 py-2.5 rounded-full bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] text-xs font-mono uppercase tracking-widest font-bold shadow-xl flex items-center gap-2 transform translate-y-3 group-hover/card:translate-y-0 transition-all duration-300 ease-out cursor-pointer group/btn">
-                          <Eye className="w-3.5 h-3.5 text-[var(--accent-warm)] group-hover/btn:scale-110 transition-transform" />
-                          <span className="whitespace-nowrap">View Project</span>
-                          <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -ml-2 group-hover/card:opacity-100 group-hover/card:ml-0 transition-all duration-300 text-[var(--accent-warm)]" />
-                        </span>
+                      {/* Photo side */}
+                      <div
+                        className="relative order-1 md:order-1 overflow-hidden"
+                        style={{ padding: 15 }}
+                      >
+                        <img
+                          src={proj.imageUrl}
+                          alt={proj.title}
+                          className="w-full h-full object-cover block"
+                          style={{ borderRadius: 15 }}
+                          draggable={false}
+                        />
                       </div>
                     </div>
-
-                    {/* Bottom Card Footer */}
-                    <div className="p-4 bg-[var(--bg-card)] flex items-center justify-between text-xs font-mono text-[var(--text-secondary)]">
-                      <span>{proj.areaSqFt}</span>
-                      <span className="text-[var(--accent-warm)] font-semibold flex items-center gap-1 group-hover/card:translate-x-1.5 transition-transform duration-300">
-                        View Project <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/card:translate-x-1 group-hover/card:-translate-y-0.5" />
-                      </span>
-                    </div>
-                  </motion.div>
+                  </article>
                 );
               })}
             </div>
           </div>
-        ) : (
-          /* MODE 2: GRID VIEW */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        )
+      ) : (
+        /* ── MODE 2: GRID VIEW ── */
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((proj) => (
               <motion.div
                 key={proj.id}
                 layout
                 onClick={() => openProject(proj)}
-                className="group/grid relative bg-[var(--bg-card)] rounded-2xl overflow-hidden border border-[var(--text-primary)]/10 hover:border-[var(--accent-warm)] transition-all cursor-pointer shadow-md hover:shadow-xl flex flex-col justify-between"
+                className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-white/25 transition-all cursor-pointer flex flex-col"
+                style={{ background: '#0a0a0a' }}
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-[var(--bg-elevated)]">
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#111]">
                   <img
                     src={proj.imageUrl}
                     alt={proj.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover/grid:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70" />
-                  <span className="absolute top-3 left-3 bg-[var(--text-primary)]/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono uppercase text-[var(--text-on-accent)]">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                  <span className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono uppercase text-white/90">
                     {proj.category}
                   </span>
                   {isAdminOrDesigner && (
                     <button
                       onClick={(e) => handleDeleteProject(proj.id, proj.title, e)}
-                      className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-red-500/100/90 text-[var(--text-primary)] text-[10px] font-mono font-bold hover:bg-red-600 transition-all cursor-pointer shadow-md"
+                      className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-red-500/90 text-white text-[10px] font-mono font-bold hover:bg-red-600 transition-all cursor-pointer"
                       title="Delete project"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -364,42 +468,38 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                   )}
                 </div>
 
-                <div className="p-6">
-                  <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)] mb-2">
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-white/40 mb-2">
                     <span>{proj.location}</span>
                     <span>{proj.year}</span>
                   </div>
-                  <h3 className="font-serif-display font-bold text-xl text-[var(--text-primary)] group-hover/grid:text-[var(--accent-warm)] transition-colors mb-2">
+                  <h3 className="font-bold text-lg text-white group-hover:text-amber-300 transition-colors mb-2">
                     {proj.title}
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed mb-4">
+                  <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-4 flex-1">
                     {proj.description}
                   </p>
-                  <div className="pt-4 border-t border-[var(--text-primary)]/10 flex items-center justify-between text-xs font-mono">
-                    <span className="text-[var(--text-primary)] font-medium">{proj.areaSqFt}</span>
-                    <span className="px-4 py-1.5 rounded-full bg-[var(--text-primary)]/5 group-hover/grid:bg-[var(--accent-warm)] text-[var(--accent-warm)] group-hover/grid:text-[var(--text-primary)] font-semibold flex items-center gap-1.5 transition-all duration-300 shadow-sm">
-                      <span>View Project</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/grid:translate-x-0.5 group-hover/grid:-translate-y-0.5" />
+                  <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                    <span className="text-white/60">{proj.areaSqFt}</span>
+                    <span className="inline-flex items-center gap-1.5 text-white/70 group-hover:text-white transition-colors">
+                      View Project
+                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </span>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
-        )}
-
-        {/* Video 1 Bottom Subtext & Action CTA */}
-        <div className="mt-16 text-center max-w-2xl mx-auto space-y-6 pt-10 border-t border-[var(--text-primary)]/10">
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] font-sans leading-relaxed">
-            We design private residences and commercial spaces from a blank page. No templates, no repeated floorplans, no shortcuts.
-          </p>
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-          </div>
         </div>
+      )}
 
+      {/* Bottom text */}
+      <div className="max-w-2xl mx-auto text-center px-4 pb-20 pt-10 border-t border-white/10">
+        <p className="text-sm text-white/40 leading-relaxed">
+          We design private residences and commercial spaces from a blank page. No templates, no repeated floorplans, no shortcuts.
+        </p>
       </div>
 
-      {/* Admin: Add Project Modal */}
       <AddProjectModal
         isOpen={isAddProjectOpen}
         onClose={() => setIsAddProjectOpen(false)}
@@ -410,3 +510,122 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
     </section>
   );
 };
+
+/* ── Single project card (when only 1 project) ── */
+function SingleProjectCard({
+  proj,
+  index,
+  total,
+  liked,
+  likeCount,
+  isAdmin,
+  onOpen,
+  onLike,
+  onDelete,
+}: {
+  proj: Project;
+  index: number;
+  total: number;
+  liked: boolean;
+  likeCount: number;
+  isAdmin: boolean;
+  onOpen: (p: Project) => void;
+  onLike: (id: string, e: React.MouseEvent) => void;
+  onDelete: (id: string, title: string, e: React.MouseEvent) => void;
+}) {
+  return (
+    <article
+      onClick={() => onOpen(proj)}
+      className="grid grid-cols-1 md:grid-cols-[60%_40%] overflow-hidden cursor-pointer"
+      style={{
+        height: 'min(680px, calc(100vh - 200px))',
+        background: '#000',
+        border: '1px solid #292929',
+        borderRadius: 22,
+      }}
+    >
+      <div className="flex flex-col order-2 md:order-2" style={{ padding: 'clamp(22px, 3vw, 45px)' }}>
+        <div className="flex items-center justify-between mb-6">
+          <span style={{ fontSize: 11, color: '#777', letterSpacing: '0.12em' }}>
+            {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+          </span>
+          <div className="flex items-center gap-1.5">
+            {isAdmin && (
+              <button
+                onClick={(e) => onDelete(proj.id, proj.title, e)}
+                className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-mono bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white cursor-pointer"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+            <button
+              onClick={(e) => onLike(proj.id, e)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono cursor-pointer ${
+                liked
+                  ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                  : 'bg-white/5 text-white/50 border border-white/10'
+              }`}
+            >
+              <Heart className={`w-3 h-3 ${liked ? 'fill-rose-400 text-rose-400' : ''}`} />
+              <span>{likeCount}</span>
+            </button>
+          </div>
+        </div>
+
+        <h3
+          className="font-bold text-white"
+          style={{
+            fontSize: 'clamp(36px, 5vw, 72px)',
+            lineHeight: 0.88,
+            letterSpacing: '-0.06em',
+            margin: 0,
+          }}
+        >
+          {proj.title}
+        </h3>
+
+        <div className="flex flex-wrap gap-2 mt-6">
+          <span className="text-[10px] px-2.5 py-2 rounded-md" style={{ background: '#242424', color: '#ccc' }}>
+            {(proj.category || '').toUpperCase()}
+          </span>
+          {proj.location && (
+            <span className="text-[10px] px-2.5 py-2 rounded-md" style={{ background: '#242424', color: '#ccc' }}>
+              {proj.location.toUpperCase()}
+            </span>
+          )}
+          {proj.year && (
+            <span className="text-[10px] px-2.5 py-2 rounded-md" style={{ background: '#242424', color: '#ccc' }}>
+              {String(proj.year).toUpperCase()}
+            </span>
+          )}
+        </div>
+
+        <p className="mt-auto text-[14px] leading-relaxed max-w-[420px]" style={{ color: '#aaa', paddingTop: 24 }}>
+          {proj.description}
+        </p>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpen(proj);
+          }}
+          className="mt-5 w-max inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#444] text-white text-xs font-mono uppercase tracking-wider hover:bg-white hover:text-black transition-all cursor-pointer"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          View project
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <div className="relative order-1 md:order-1 overflow-hidden" style={{ padding: 15 }}>
+        <img
+          src={proj.imageUrl}
+          alt={proj.title}
+          className="w-full h-full object-cover block"
+          style={{ borderRadius: 15 }}
+          draggable={false}
+        />
+      </div>
+    </article>
+  );
+}
