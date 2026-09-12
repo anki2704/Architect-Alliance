@@ -1,7 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Sparkles, MapPin, MousePointer2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import gsap from 'gsap';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { motion } from 'motion/react';
 
 interface HeroSectionProps {
   onNavigate: (sectionId: string) => void;
@@ -9,202 +7,199 @@ interface HeroSectionProps {
    * Home page ka "second page" — jo bhi section yahan pass karoge (Projects,
    * ya future me koi aur section), wo neeche diye gaye reveal wrapper me
    * daala jayega aur scroll par sticky Hero ke upar "curtain" ki tarah
-   * slide-up hoga. Ye behaviour is component ke andar hi fixed hai, isliye
-   * section badalne par bhi slider apne aap wahi ka wahi bana rahega.
+   * slide-up hoga.
    */
   children?: React.ReactNode;
 }
 
 const HERO_IMAGES = [
   {
-    url: '/images/hero/image3.png',
-    title: 'Signature Residence',
+    url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2400&q=92',
+    title: 'Quiet Luxury',
     location: 'Architecture Alliance',
-    tag: 'Bespoke Residential'
+    tag: 'Architecture / Residential',
   },
-]
+  {
+    url: 'https://images.unsplash.com/photo-1775112862850-02b1f72edcb1?auto=format&fit=crop&fm=jpg&q=92&w=2400',
+    title: 'Form & Texture',
+    location: 'Architecture Alliance',
+    tag: 'Interior / Contemporary',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&fm=jpg&q=92&w=2400',
+    title: 'Designed to Feel',
+    location: 'Architecture Alliance',
+    tag: 'Hospitality / Design',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1774267916884-afae166d49b3?auto=format&fit=crop&fm=jpg&q=92&w=2400',
+    title: 'Living in Form',
+    location: 'Architecture Alliance',
+    tag: 'Residential / Modern',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=92',
+    title: 'Less but Better',
+    location: 'Architecture Alliance',
+    tag: 'Material / Detail',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2400&q=92&sat=-15',
+    title: 'Light in Space',
+    location: 'Architecture Alliance',
+    tag: 'Architecture / Space',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2400&q=92',
+    title: 'Details Matter',
+    location: 'Architecture Alliance',
+    tag: 'Interiors / Craft',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=2400&q=92',
+    title: 'Built with Intent',
+    location: 'Architecture Alliance',
+    tag: 'Studio / Portfolio',
+  },
+];
+
+const INTERVAL_MS = 5500;
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, children }) => {
   const [activeImgIdx, setActiveImgIdx] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
-  const imageLayerRef = useRef<HTMLDivElement>(null);
-  const contentLayerRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
 
-  /*
-  // Auto-advance the background photography
+  // Auto-advance background images
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveImgIdx((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 6500);
+    }, INTERVAL_MS);
     return () => clearInterval(timer);
   }, []);
-  */
 
-  // Responsive object-position is handled purely via CSS (see the <img> className
-  // below: object-[58%_42%] md:object-[68%_50%] lg:object-[75%_50%]).
-  // This avoids the old JS/resize-event approach, which applied the crop only
-  // AFTER mount (causing a visible jump on load) and could get out of sync
-  // during mobile browser-chrome resize events (address bar show/hide),
-  // which is what was causing the inconsistent crop/shift on mobile.
-
-  // GSAP mouse-parallax — only desktop
-  useEffect(() => {
-    const section = sectionRef.current;
-    const imageLayer = imageLayerRef.current;
-    const contentLayer = contentLayerRef.current;
-    const glow = glowRef.current;
-    if (!section || !imageLayer || !contentLayer) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    const isMobile = window.innerWidth < 1024;
-
-    if (prefersReducedMotion || isTouchDevice || isMobile) {
-      gsap.set(imageLayer, { x: 0, y: 0, scale: 1 });
-      gsap.set(contentLayer, { x: 0, y: 0 });
-      return;
-    }
-
-    const xImage = gsap.quickTo(imageLayer, 'x', { duration: 1.4, ease: 'power3.out' });
-    const yImage = gsap.quickTo(imageLayer, 'y', { duration: 1.4, ease: 'power3.out' });
-    const scaleImage = gsap.quickTo(imageLayer, 'scale', { duration: 1.4, ease: 'power3.out' });
-
-    const xContent = gsap.quickTo(contentLayer, 'x', { duration: 1, ease: 'power3.out' });
-    const yContent = gsap.quickTo(contentLayer, 'y', { duration: 1, ease: 'power3.out' });
-
-    const xGlow = glow ? gsap.quickTo(glow, 'x', { duration: 0.6, ease: 'power2.out' }) : null;
-    const yGlow = glow ? gsap.quickTo(glow, 'y', { duration: 0.6, ease: 'power2.out' }) : null;
-
-    const handlePointerMove = (e: PointerEvent) => {
-      const rect = section.getBoundingClientRect();
-      const px = (e.clientX - rect.left) / rect.width - 0.5;
-      const py = (e.clientY - rect.top) / rect.height - 0.5;
-
-      xImage(px * -10);
-      yImage(py * -6);
-      scaleImage(1.02);
-
-      xContent(px * 10);
-      yContent(py * 6);
-
-      if (xGlow && yGlow) {
-        xGlow(e.clientX - rect.left);
-        yGlow(e.clientY - rect.top);
-      }
-    };
-
-    const handlePointerLeave = () => {
-      xImage(0);
-      yImage(0);
-      scaleImage(1.00);
-      xContent(0);
-      yContent(0);
-    };
-
-    section.addEventListener('pointermove', handlePointerMove);
-    section.addEventListener('pointerleave', handlePointerLeave);
-    gsap.set(imageLayer, { scale: 1.00, x: 0, y: 0 });
-
-    return () => {
-      section.removeEventListener('pointermove', handlePointerMove);
-      section.removeEventListener('pointerleave', handlePointerLeave);
-    };
+  const goTo = useCallback((i: number) => {
+    setActiveImgIdx(i);
   }, []);
 
   const currentHero = HERO_IMAGES[activeImgIdx];
 
   return (
     <>
-    <section
-      ref={sectionRef}
-      id="home"
-      className="sticky top-0 z-0 h-dvh min-h-[480px] lg:min-h-[720px] w-full overflow-hidden bg-[#F7F6F4] text-[var(--text-primary)]"
-    >
-      {/* Layer 1: Background Photography */}
-      <div ref={imageLayerRef} className="absolute inset-0 will-change-transform">
-        {/* Same source image on every breakpoint. The image itself is a wide
-           2:1 banner with the house sitting in roughly the right 60% of the
-           frame — on a tall/narrow mobile screen, object-cover has to zoom
-           in a lot, so object-position has to be tuned to the house's actual
-           position (72% across), not the desktop framing (75%, which was
-           tuned for a much wider visible window and happened to look
-           different once cropped this tightly). */}
-        <img
-          ref={imgRef}
-          src={currentHero.url}
-          alt={currentHero.title}
-          className="absolute inset-0 w-full h-full object-cover object-[72%_center] lg:object-[75%_center]"
-          style={{ imageRendering: 'auto' }}
-          loading="eager"
-          fetchPriority="high"
-        />
-        {/* Light overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/15 via-white/5 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-      </div>
+      <section
+        ref={sectionRef}
+        id="home"
+        className="sticky top-0 z-0 h-dvh min-h-[480px] lg:min-h-[720px] w-full overflow-hidden bg-[#111] text-white"
+      >
+        {/* Layer 1: Background Photography — auto slider */}
+        <div className="absolute inset-0">
+          {HERO_IMAGES.map((img, i) => (
+            <div
+              key={i}
+              className="absolute inset-0"
+              style={{
+                opacity: i === activeImgIdx ? 1 : 0,
+                transform: i === activeImgIdx ? 'scale(1)' : 'scale(1.045)',
+                transition:
+                  i === activeImgIdx
+                    ? 'opacity 1.15s ease, transform 6s cubic-bezier(0.2, 0.7, 0.2, 1)'
+                    : 'opacity 1.15s ease, transform 1.15s ease',
+                zIndex: i === activeImgIdx ? 1 : 0,
+                pointerEvents: 'none',
+              }}
+            >
+              <img
+                src={img.url}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover object-[72%_center] lg:object-[75%_center]"
+                style={{ imageRendering: 'auto' }}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                draggable={false}
+              />
+            </div>
+          ))}
 
-      {/* Layer 2: Soft cursor glow (desktop only) */}
-      <div
-        ref={glowRef}
-        className="pointer-events-none absolute w-[520px] h-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.06] blur-3xl bg-[var(--accent-amber)] hidden lg:block"
-      />
-
-      {/* Decorative fine grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-0" />
-
-      {/* Layer 3: Foreground Content */}
-      <div ref={contentLayerRef} className="relative z-10 h-full w-full will-change-transform">
-        {/* Brand Logo */}
-        <div className="absolute top-10 left-4 sm:top-5 sm:left-3 lg:left-6 z-20 flex items-right gap-3 sm:gap-4">
-          <img
-            src="/images/brand/logo-new.png"
-            alt="Architecture Alliance"
-            className="h-16 sm:h-20 md:h-[6.5rem] w-auto object-contain bg-transparent"
+          {/* Light overlay */}
+          <div
+            className="absolute inset-0 z-[2] pointer-events-none"
+            style={{
+              background: `
+                linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.18) 58%, rgba(0,0,0,0.06)),
+                linear-gradient(0deg, rgba(0,0,0,0.35), transparent 55%)
+              `,
+            }}
           />
         </div>
 
-        <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-28 pb-20 relative z-10">
-          <div className="max-w-2xl">
-            {/* Main Hero Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="mt-7"
-            >
-              <h1 className="font-serif-display text-5xl sm:text-6xl xl:text-8xl font-extrabold tracking-tight leading-[1.02]">
-                We Design 
-                <br />
-                <span className="italic text-[var(--accent-amber)]">That Inspire &amp; Elevate</span>
-              </h1>
-            </motion.div>
+        {/* Layer 2: Foreground Content */}
+        <div className="relative z-10 h-full w-full">
+          {/* Brand Logo — original position */}
+          <div className="absolute top-10 left-4 sm:top-5 sm:left-3 lg:left-6 z-20 flex items-center gap-3 sm:gap-4">
+            <img
+              src="/images/brand/logo-new.png"
+              alt="Architecture Alliance"
+              className="h-16 sm:h-20 md:h-[6.5rem] w-auto object-contain bg-transparent"
+              draggable={false}
+            />
+          </div>
 
-            {/* Subheading Description */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.25 }}
-              className="mt-6 text-base sm:text-lg text-[var(--text-primary)]/70 leading-relaxed max-w-lg font-normal"
-            >
-              {/* Architecture Alliance is a global architecture practice focused on design
-              excellence, innovation, and creating meaningful spaces. */}
-            </motion.p>
+          <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-28 pb-20 relative z-10">
+            <div className="max-w-2xl">
+              {/* Main Hero Headline — original text kept */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                className="mt-7"
+              >
+                {/*<h1 className="font-serif-display text-5xl sm:text-6xl xl:text-8xl font-extrabold tracking-tight leading-[1.02] text-white">
+                  We Design
+                  <br />
+                  <span className="italic text-[var(--accent-amber)]">That Inspire &amp; Elevate</span>
+                </h1>*/}
+              </motion.div>
+
+              {/* Subheading */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.25 }}
+                className="mt-6 text-base sm:text-lg text-white/70 leading-relaxed max-w-lg font-normal"
+              >
+                {/* Optional subtext — kept empty like original */}
+              </motion.p>
+            </div>
+          </div>
+
+          {/* Slide dots — subtle, bottom area */}
+          <div
+            className="absolute z-20 flex items-center gap-2"
+            style={{ right: '1.5rem', bottom: '1.5rem' }}
+          >
+            {HERO_IMAGES.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Slide ${i + 1}`}
+                onClick={() => goTo(i)}
+                className="rounded-full border border-white/80 transition-colors cursor-pointer"
+                style={{
+                  width: 7,
+                  height: 7,
+                  padding: 0,
+                  background: i === activeImgIdx ? '#fff' : 'transparent',
+                }}
+              />
+            ))}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    {/* Reveal wrapper: puts the "second page" section right after the
-       sticky Hero, with an opaque background + z-10 so it slides up from
-       the bottom and covers the Hero on scroll — no matter which section
-       is passed in as children. */}
-    {children && (
-      <div className="relative z-10 bg-[var(--bg-main)]">
-        {children}
-      </div>
-    )}
+      {/* Reveal wrapper: second page slides up over sticky hero */}
+      {children && (
+        <div className="relative z-10 bg-[var(--bg-main)]">
+          {children}
+        </div>
+      )}
     </>
   );
 };
