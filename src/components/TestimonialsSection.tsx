@@ -88,7 +88,7 @@ export const TestimonialsSection: React.FC = () => {
   return (
     <section
       id="testimonials"
-      className="py-28 bg-[var(--bg-main)] text-[var(--text-primary)] border-t border-[var(--text-primary)]/10 relative"
+      className="py-28 bg-[#f4f4f1] text-[var(--text-primary)] relative"
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Section Header */}

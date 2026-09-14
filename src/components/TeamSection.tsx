@@ -52,7 +52,7 @@ const FounderNote: React.FC<FounderNoteProps> = ({
               <img
                 src={image}
                 alt={name}
-                className="w-full h-full object-cover object-top grayscale"
+                className="w-full h-full object-contain object-center grayscale"
                 loading="lazy"
               />
             </div>
@@ -135,7 +135,7 @@ export const TeamSection: React.FC = () => {
     <>
       {/* ========== 1. Personal Note from Founder ========== */}
       <FounderNote
-        image="/images/team/somansh-pandey.jpg" // ← replace with your actual image path
+        image="/public/images/team/Somansh_panday.jpeg" // ← replace with your actual image path
         title="PERSONAL NOTE FROM OUR FOUNDER"
         paragraphs={[
           "write somthing about the founder and his vision for the company. This could include his background, experience, and what inspired him to start the company.",
@@ -155,10 +155,10 @@ export const TeamSection: React.FC = () => {
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-14 sm:mb-16">
             <div className="flex-1">
               <motion.div {...fadeUp(0)} className="mb-5">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[11px] font-medium tracking-widest uppercase text-white/90 border border-white/10">
+                {/*<span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[11px] font-medium tracking-widest uppercase text-white/90 border border-white/10">
                   <Plus className="w-3 h-3" strokeWidth={2.5} />
                   Team Member
-                </span>
+                </span>*/}
               </motion.div>
 
               <motion.h2
@@ -174,14 +174,14 @@ export const TeamSection: React.FC = () => {
               className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center gap-6 lg:max-w-md xl:max-w-lg"
             >
               <p className="text-[13px] sm:text-sm leading-relaxed text-white/70 tracking-wide uppercase font-medium">
-                BDAA unites architects, interior designers and visualisers with one goal: setting a new standard of excellence in Indian architecture.
+                XYZ architects, interior designers and visualisers with one goal: setting a new standard of excellence in Indian architecture.
               </p>
-              <a
+              {/*<a
                 href="#careers"
                 className="shrink-0 inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#9CAF88] text-black text-sm font-semibold tracking-wide hover:bg-[#8B9E77] transition-colors duration-300"
               >
                 JOIN US
-              </a>
+              </a>*/}
             </motion.div>
           </div>
 

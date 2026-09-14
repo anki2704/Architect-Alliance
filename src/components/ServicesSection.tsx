@@ -26,7 +26,7 @@ const services: ServiceItem[] = [
     titleLine2: 'DESIGN',
     //sub: 'Residential / Commercial / Hospitality & Retail',
     desc: 'We create thoughtful architectural spaces that balance form, function, and timeless aesthetics. Every project is shaped through careful planning, refined material selection, natural light, and a strong sense of spatial harmony. Our approach transforms ideas into distinctive, functional environments designed to feel both contemporary and enduring.',
-    image: 'https://images.openai.com/static-rsc-4/Z9CLe8cNv0kQiyaovYPUepJGBWH9lpVJwWoztMeUDnMZz8Otlm8-NBpc7S7gqsYs0QUr0znBAiTkBfi58AwFKuVod3WO_YKMaF2NAyhH40V7pyBBs7R2xKqLGWDF1Am3bGOhI2sso2lPSMVCjJxGzRXHq6R0Pu_3XMAKdv6Nhhv_BI7H9lSsIic002y8LCaa?purpose=fullsize',
+    image: '/public/images/service/Architecture.png',
   },
   {
     id: 'interior',
@@ -36,7 +36,7 @@ const services: ServiceItem[] = [
     //sub: 'Residential Interiors / Commercial Interiors / Hospitality & Retail',
     desc: 'Our interior design approach is rooted in creating spaces that feel both beautiful and purposeful. From carefully curated materials and textures to thoughtful lighting and spatial composition, every detail is considered to create interiors that reflect character, enhance everyday living, and stand the test of time.',
     image:
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=85',
+      '/public/images/service/Interior.png',
   },
   {
     id: 'construction',
@@ -45,7 +45,7 @@ const services: ServiceItem[] = [
     //sub: 'Execution / Site Supervision / Quality Control',
     desc: 'We manage the construction process with precision, ensuring every stage is executed with careful planning, quality control, and attention to detail. From site coordination and material selection to execution and final finishing, we bring design concepts to life through efficient, reliable, and seamless project management.',
     image:
-      'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1400&q=85',
+      '/public/images/service/Construction.png',
   },
   {
     id: 'vastu',
@@ -54,7 +54,7 @@ const services: ServiceItem[] = [
     //sub: 'Orientation / Energy Flow / Spatial Harmony',
     desc: 'We thoughtfully integrate Vastu principles with contemporary design to create spaces that feel balanced, harmonious, and purposeful. From orientation and spatial planning to the placement of key elements, every detail is considered to encourage a positive flow of energy while maintaining modern functionality and aesthetics.',
     image:
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=85',
+      '/public/images/service/Vastu.png',
   },
   {
     id: 'project-mgmt',
@@ -64,7 +64,7 @@ const services: ServiceItem[] = [
     //sub: 'Planning / Coordination / Execution',
     desc: 'We bring structure, precision, and efficiency to every stage of a project. From planning and coordination to execution and final delivery, we oversee every detail to ensure a seamless process, consistent quality, and a finished space that reflects the original design vision.',
     image:
-      'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1400&q=85',
+      '/public/images/service/project_management.png',
   },
   {
     id: 'Allied-Services',
@@ -74,7 +74,7 @@ const services: ServiceItem[] = [
     //sub: 'Procurement / Coordination / Quality',
     desc: 'We provide reliable support beyond design, coordinating the essential details that bring every project together. From sourcing and vendor coordination to materials, finishes, and on-site requirements, we ensure every element works seamlessly with the design vision and project timeline.',
     image:
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=85',
+      '/public/images/service/Allied_Services.png',
   },
 ];
 
@@ -255,7 +255,7 @@ export const ServicesSection: React.FC = () => {
             <nav
               className="hidden md:flex absolute right-0 top-0 bottom-0 z-20"
               style={{
-                width: 280,
+                width: 500,
                 borderLeft: '1px solid #d5d5d0',
                 background: '#f7f7f5',
               }}
@@ -349,7 +349,7 @@ export const ServicesSection: React.FC = () => {
         /* Desktop: content stays left of the fixed tabs */
         @media (min-width: 768px) {
           #services article main {
-            margin-right: 280px !important;
+            margin-right: 500px !important;
           }
         }
 

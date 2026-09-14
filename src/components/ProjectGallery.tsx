@@ -155,10 +155,10 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
     <section
       id="projects"
       className="relative border-0 outline-none"
-      style={{ background: '#f4f4f1', color: '#fff', borderTop: 'none', boxShadow: 'none' }}
+      style={{ background: '#f4f4f1', color: '#f4f4f1', borderTop: 'none', boxShadow: 'none' }}
     >
       {/* ── Header area ── */}
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 pt-20 lg:pt-28 pb-10 relative z-10">
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 pt-40 lg:pt-48 pb-10 relative z-10">
 
         {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
@@ -205,8 +205,8 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-2 rounded-full text-xs font-mono tracking-widest uppercase transition-all whitespace-nowrap cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-white text-black font-bold'
-                    : 'text-white/50 hover:text-white hover:bg-white/10 border border-white/10'
+                    ? 'bg-[var(--accent-warm)] text-black font-bold'
+                    : 'text-black/50 hover:text-[var(--accent-warm)] hover:bg-white/10 border border-white/10'
                 }`}
               >
                 {cat.label}
@@ -220,7 +220,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all cursor-pointer ${
                 viewMode === 'stack'
                   ? 'bg-white text-black font-bold'
-                  : 'text-white/50 hover:text-white'
+                  : 'text-black/50 hover:text-[var(--accent-warm)]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -231,7 +231,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all cursor-pointer ${
                 viewMode === 'grid'
                   ? 'bg-white text-black font-bold'
-                  : 'text-white/50 hover:text-white'
+                  : 'text-black/50 hover:text-[var(--accent-warm)]'
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
@@ -495,7 +495,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
 
       {/* Bottom text */}
       <div className="max-w-2xl mx-auto text-center px-4 pb-20 pt-10 border-t border-white/10">
-        <p className="text-sm text-white/40 leading-relaxed">
+        <p className="text-sm text-black leading-relaxed">
           We design private residences and commercial spaces from a blank page. No templates, no repeated floorplans, no shortcuts.
         </p>
       </div>
