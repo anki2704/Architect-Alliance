@@ -307,7 +307,7 @@ export default function App() {
           <Route
             path="/team"
             element={
-              <div className="pt-24 min-h-screen">
+              <div className="min-h-screen">
                 <TeamSection />
               </div>
             }
@@ -315,7 +315,7 @@ export default function App() {
           <Route
             path="/journal"
             element={
-              <div className="pt-24 min-h-screen">
+              <div className="min-h-screen">
                 <JournalSection />
               </div>
             }
@@ -324,7 +324,7 @@ export default function App() {
           <Route
             path="/journal/:id"
             element={
-              <div className="pt-24 min-h-screen">
+              <div className="min-h-screen">
                 <JournalArticlePage />
               </div>
             }
@@ -332,7 +332,7 @@ export default function App() {
           <Route
             path="/projects"
             element={
-              <div className="pt-24 min-h-screen">
+              <div className="min-h-screen">
                 <ProjectGallery
                   projects={projects}
                   currentUser={currentUser}
@@ -351,7 +351,7 @@ export default function App() {
           <Route
             path="/project/:id"
             element={
-              <div className="pt-24 min-h-screen">
+              <div className="min-h-screen">
                 <ProjectDetailPage projects={projects} />
               </div>
             }

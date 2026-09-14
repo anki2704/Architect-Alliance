@@ -382,8 +382,8 @@ export const IsometricFloorPlanViewer: React.FC<Model3DShowcaseProps> = ({
   };
 
   return (
-    <section className="py-28 bg-[var(--bg-main)] text-[var(--text-primary)] relative overflow-hidden border-t border-[var(--text-primary)]/10">
-      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(var(--text-primary)_0.75px,transparent_0.75px)] [background-size:20px_20px]" />
+    <section className="py-28 bg-[#f4f4f1] text-[var(--text-primary)] relative overflow-hidden /10">
+      <div className="absolute inset-0 pointer-events-none opacity-20 [background-size:20px_20px]" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
@@ -393,10 +393,10 @@ export const IsometricFloorPlanViewer: React.FC<Model3DShowcaseProps> = ({
               <Building2 className="w-3.5 h-3.5 text-[var(--accent-warm)]" />
               Live 3D Model
             </span>
-            <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)]">
+            <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-black">
               Walk Around the Project
             </h2>
-            <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-xl">
+            <p className="text-sm text-black mt-2 max-w-xl">
               Drag to rotate, scroll to zoom, or let it turn on its own. Works with any project model exported as
               GLB, OBJ, FBX, STL, or DAE.
             </p>

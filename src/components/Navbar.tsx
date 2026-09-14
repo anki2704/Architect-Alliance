@@ -75,6 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Glass only on center nav links
   const showGlass = !isHomePage || isScrolled;
 
+
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -103,9 +104,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* CENTER — Glass effect ONLY here */}
           <nav
-            className={`relative z-10 hidden lg:flex items-center gap-5 xl:gap-8 px-6 py-2.5 rounded-full transition-all duration-300 ${
+            className={`relative z-10 hidden lg:flex items-center gap-5 xl:gap-8 px-6 py-2.5 rounded-full transition-all duration-300 ml-auto ${
               showGlass
-                ? 'bg-white/65 backdrop-blur-xl border border-white/40 shadow-[0_4px_24px_rgba(0,0,0,0.06)]'
+                ? 'bg-white/1 backdrop-blur-xl border border-white/40 shadow-[0_4px_24px_rgba(0,0,0,0.06)]'
                 : ''
             }`}
           >
