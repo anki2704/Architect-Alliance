@@ -26,7 +26,7 @@ const services: ServiceItem[] = [
     titleLine2: 'DESIGN',
     //sub: 'Residential / Commercial / Hospitality & Retail',
     desc: 'We create thoughtful architectural spaces that balance form, function, and timeless aesthetics. Every project is shaped through careful planning, refined material selection, natural light, and a strong sense of spatial harmony. Our approach transforms ideas into distinctive, functional environments designed to feel both contemporary and enduring.',
-    image: '/public/images/service/Architecture.png',
+    image: '/images/service/Architecture.png',
   },
   {
     id: 'interior',
@@ -36,7 +36,7 @@ const services: ServiceItem[] = [
     //sub: 'Residential Interiors / Commercial Interiors / Hospitality & Retail',
     desc: 'Our interior design approach is rooted in creating spaces that feel both beautiful and purposeful. From carefully curated materials and textures to thoughtful lighting and spatial composition, every detail is considered to create interiors that reflect character, enhance everyday living, and stand the test of time.',
     image:
-      '/public/images/service/Interior.png',
+      '/images/service/Interior.png',
   },
   {
     id: 'construction',
@@ -45,7 +45,7 @@ const services: ServiceItem[] = [
     //sub: 'Execution / Site Supervision / Quality Control',
     desc: 'We manage the construction process with precision, ensuring every stage is executed with careful planning, quality control, and attention to detail. From site coordination and material selection to execution and final finishing, we bring design concepts to life through efficient, reliable, and seamless project management.',
     image:
-      '/public/images/service/Construction.png',
+      '/images/service/Construction.png',
   },
   {
     id: 'vastu',
@@ -54,7 +54,7 @@ const services: ServiceItem[] = [
     //sub: 'Orientation / Energy Flow / Spatial Harmony',
     desc: 'We thoughtfully integrate Vastu principles with contemporary design to create spaces that feel balanced, harmonious, and purposeful. From orientation and spatial planning to the placement of key elements, every detail is considered to encourage a positive flow of energy while maintaining modern functionality and aesthetics.',
     image:
-      '/public/images/service/Vastu.png',
+      '/images/service/Vastu.png',
   },
   {
     id: 'project-mgmt',
@@ -64,7 +64,7 @@ const services: ServiceItem[] = [
     //sub: 'Planning / Coordination / Execution',
     desc: 'We bring structure, precision, and efficiency to every stage of a project. From planning and coordination to execution and final delivery, we oversee every detail to ensure a seamless process, consistent quality, and a finished space that reflects the original design vision.',
     image:
-      '/public/images/service/project_management.png',
+      '/images/service/project_management.png',
   },
   {
     id: 'Allied-Services',
@@ -74,7 +74,7 @@ const services: ServiceItem[] = [
     //sub: 'Procurement / Coordination / Quality',
     desc: 'We provide reliable support beyond design, coordinating the essential details that bring every project together. From sourcing and vendor coordination to materials, finishes, and on-site requirements, we ensure every element works seamlessly with the design vision and project timeline.',
     image:
-      '/public/images/service/Allied_Services.png',
+      '/images/service/Allied_Services.png',
   },
 ];
 
