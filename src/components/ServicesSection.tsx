@@ -35,8 +35,7 @@ const services: ServiceItem[] = [
     titleLine2: 'DESIGN',
     //sub: 'Residential Interiors / Commercial Interiors / Hospitality & Retail',
     desc: 'Our interior design approach is rooted in creating spaces that feel both beautiful and purposeful. From carefully curated materials and textures to thoughtful lighting and spatial composition, every detail is considered to create interiors that reflect character, enhance everyday living, and stand the test of time.',
-    image:
-      '/images/service/Interior.png',
+    image: '/images/service/interior.png',
   },
   {
     id: 'construction',
@@ -44,8 +43,7 @@ const services: ServiceItem[] = [
     title: 'CONSTRUCTION',
     //sub: 'Execution / Site Supervision / Quality Control',
     desc: 'We manage the construction process with precision, ensuring every stage is executed with careful planning, quality control, and attention to detail. From site coordination and material selection to execution and final finishing, we bring design concepts to life through efficient, reliable, and seamless project management.',
-    image:
-      '/images/service/Construction.png',
+    image: '/images/service/construction.png',
   },
   {
     id: 'vastu',
@@ -54,7 +52,7 @@ const services: ServiceItem[] = [
     //sub: 'Orientation / Energy Flow / Spatial Harmony',
     desc: 'We thoughtfully integrate Vastu principles with contemporary design to create spaces that feel balanced, harmonious, and purposeful. From orientation and spatial planning to the placement of key elements, every detail is considered to encourage a positive flow of energy while maintaining modern functionality and aesthetics.',
     image:
-      '/images/service/Vastu.png',
+      '/images/service/vastu.png',
   },
   {
     id: 'project-mgmt',

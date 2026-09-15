@@ -135,7 +135,7 @@ export const TeamSection: React.FC = () => {
     <>
       {/* ========== 1. Personal Note from Founder ========== */}
       <FounderNote
-        image="/images/team/Somansh_panday.jpeg" // ← replace with your actual image path
+        image = "/images/team/Somansh_panday.jpeg" // ← replace with your actual image path
         title="PERSONAL NOTE FROM OUR FOUNDER"
         paragraphs={[
           "write somthing about the founder and his vision for the company. This could include his background, experience, and what inspired him to start the company.",
