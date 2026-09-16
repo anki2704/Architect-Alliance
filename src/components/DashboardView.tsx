@@ -21,7 +21,6 @@ import {
 import { ProjectDetailView } from './ProjectDetailView';
 import { AddJournalModal } from './AddJournalModal';
 import { AddTeamModal } from './AddTeamModal';
-import { AddProjectModal } from './AddProjectModal';
 import {
   Calendar,
   Mail,
@@ -104,8 +103,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<JournalArticle | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
-  const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(null);
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
   const [isAddingDesigner, setIsAddingDesigner] = useState(false);
   const [newDesignerName, setNewDesignerName] = useState('');
@@ -258,6 +256,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const handleDeleteTeamMember = async (id: string, name: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Remove team member "${name}"?`)) return;
+    try {
+      await teamApi.remove(id);
+      setTeam((prev) => prev.filter((m) => m.id !== id));
+    } catch (err) {
+      alert('Could not remove team member.');
+    }
+  };
+
   const handleDeleteJournalArticle = async (id: string, title: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!window.confirm(`Delete article "${title}"?`)) return;
@@ -266,17 +275,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       setJournal((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
       alert('Could not delete article.');
-    }
-  };
-
-  const handleDeleteTeamMember = async (id: string, name: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!window.confirm(`Remove "${name}" from the team?`)) return;
-    try {
-      await teamApi.remove(id);
-      setTeam((prev) => prev.filter((m) => m.id !== id));
-    } catch (err) {
-      alert('Could not remove team member.');
     }
   };
 
@@ -627,26 +625,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         Tap a project to open full details
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-xs text-slate-500">{projects.length} total</span>
-                      {(role === 'admin' || role === 'designer') && (
-                        <button
-                          type="button"
-                          onClick={() => setIsProjectModalOpen(true)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--accent-warm)] transition-colors cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          Add Project
-                        </button>
-                      )}
-                    </div>
+                    <span className="text-xs text-slate-500">{projects.length} total</span>
                   </div>
 
                   {/* Card grid — clickable */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {projects.length === 0 ? (
                       <p className="text-sm text-slate-500 col-span-full py-8 text-center">
-                        No projects yet. Click "Add Project" above to create one.
+                        No projects yet. Add projects from the website gallery when logged in.
                       </p>
                     ) : (
                       projects.map((p) => (
@@ -1018,51 +1004,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* ════ TEAM ════ */}
               {activeNav === 'team' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center justify-between gap-4">
                     <div>
                       <h1 className="font-serif-display text-2xl font-bold">Team</h1>
                       <p className="text-xs text-[var(--text-muted)]">Public team members shown on the website</p>
                     </div>
-                    {role === 'admin' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingTeamMember(null);
-                          setIsTeamModalOpen(true);
-                        }}
-                        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--accent-warm)] transition-colors cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Team Member
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingMember(null);
+                        setIsTeamModalOpen(true);
+                      }}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--accent-warm)] transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Team Member
+                    </button>
                   </div>
                   {team.length === 0 ? (
-                    <p className="text-sm text-slate-500 py-8 text-center">
-                      No team members yet. Click "Add Team Member" above to create one.
-                    </p>
+                    <p className="text-sm text-slate-500 py-8 text-center">No team members found.</p>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {team.map((m) => (
                         <div
                           key={m.id}
-                          role={role === 'admin' ? 'button' : undefined}
-                          tabIndex={role === 'admin' ? 0 : undefined}
                           onClick={() => {
-                            if (role !== 'admin') return;
-                            setEditingTeamMember(m);
+                            setEditingMember(m);
                             setIsTeamModalOpen(true);
                           }}
-                          onKeyDown={(e) => {
-                            if (role !== 'admin') return;
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              setEditingTeamMember(m);
-                              setIsTeamModalOpen(true);
-                            }
-                          }}
-                          className={`group rounded-2xl border border-[var(--text-primary)]/10 bg-[var(--bg-card)]/5 overflow-hidden flex gap-4 p-4 relative ${
-                            role === 'admin' ? 'cursor-pointer hover:border-[var(--accent-warm)]/40 transition-colors' : ''
-                          }`}
+                          className="rounded-2xl border border-[var(--text-primary)]/10 bg-[var(--bg-card)]/5 overflow-hidden flex gap-4 p-4 cursor-pointer hover:border-[var(--accent-warm)]/40 transition-colors group"
                         >
                           <img
                             src={m.image}
@@ -1073,21 +1043,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <h3 className="font-semibold text-sm text-[var(--text-primary)] truncate">{m.name}</h3>
                             <p className="text-[11px] text-[var(--accent-warm)] font-medium">{m.role}</p>
                             <p className="text-[11px] text-[var(--text-muted)] mt-1 line-clamp-3">{m.bio}</p>
-                            {role === 'admin' && (
-                              <div className="flex items-center gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-warm)]">
-                                  Click to edit
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleDeleteTeamMember(m.id, m.name, e)}
-                                  className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-400 cursor-pointer"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                  Remove
-                                </button>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-warm)]">
+                                Click to edit
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteTeamMember(m.id, m.name, e)}
+                                className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-400 cursor-pointer"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Delete
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1336,22 +1304,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Add / edit team member overlay */}
       <AddTeamModal
         isOpen={isTeamModalOpen}
-        member={editingTeamMember}
+        member={editingMember}
         onClose={() => {
           setIsTeamModalOpen(false);
-          setEditingTeamMember(null);
+          setEditingMember(null);
         }}
-        onCreated={(member) => setTeam((prev) => [...prev, member])}
-        onUpdated={(member) =>
-          setTeam((prev) => prev.map((m) => (m.id === member.id ? member : m)))
+        onCreated={(member) =>
+          setTeam((prev) => [...prev, member].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)))
         }
-      />
-
-      {/* Add project overlay */}
-      <AddProjectModal
-        isOpen={isProjectModalOpen}
-        onClose={() => setIsProjectModalOpen(false)}
-        onCreated={(project) => setProjects((prev) => [project, ...prev])}
+        onUpdated={(member) =>
+          setTeam((prev) =>
+            prev
+              .map((m) => (m.id === member.id ? member : m))
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          )
+        }
       />
     </div>
   );
