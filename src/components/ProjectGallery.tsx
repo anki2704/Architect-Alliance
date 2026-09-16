@@ -184,7 +184,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
           <h2
             className="font-extrabold tracking-tight text-black mb-3 translate-y-[-80px]"
             style={{
-              fontSize: 'clamp(90px, 20vw, 120px)',
+              fontSize: 'clamp(70px, 14vw, 80px)',
               letterSpacing: '-0.03em',
               lineHeight: 0.88,
             }}

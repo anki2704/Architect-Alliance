@@ -54,7 +54,7 @@ const services: ServiceItem[] = [
     image:
       '/images/service/vastu.png',
   },
-  {
+  /*{
     id: 'project-mgmt',
     num: '05',
     title: 'PROJECT',
@@ -63,10 +63,10 @@ const services: ServiceItem[] = [
     desc: 'We bring structure, precision, and efficiency to every stage of a project. From planning and coordination to execution and final delivery, we oversee every detail to ensure a seamless process, consistent quality, and a finished space that reflects the original design vision.',
     image:
       '/images/service/project_management.png',
-  },
+  },*/
   {
     id: 'Allied-Services',
-    num: '06',
+    num: '05',
     title: 'ALLIED',
     titleLine2: 'SERVICES',
     //sub: 'Procurement / Coordination / Quality',
@@ -86,6 +86,20 @@ export const ServicesSection: React.FC = () => {
       style={{ background: '#f4f4f1', color: '#080808' }}
     >
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+
+                {/* Top row */}
+        <div className="font-bold tracking-tight text-[var(--accent-warm)] mb-3 translate-y-[-30px] translate-x-[30px] ">
+          <span
+            style={{
+              fontSize: 'clamp(30px, 8vw, 60px)',
+              letterSpacing: '-0.03em',
+              lineHeight: 0.88,
+            }}
+          >
+            SERVICES
+          </span>
+        </div>
+
         {/* Outer framed container */}
         <div
           className="relative overflow-hidden"
@@ -128,20 +142,6 @@ export const ServicesSection: React.FC = () => {
                       maxWidth: '100%',
                     }}
                   >
-                    {/* Top row */}
-                    <div className="flex justify-between items-start">
-                      <span style={{ fontSize: 20, fontWeight: 700 }}>{svc.num}</span>
-                      <span
-                        style={{
-                          fontSize: 10,
-                          letterSpacing: '0.16em',
-                          color: '#777',
-                        }}
-                      >
-                        OUR SERVICES
-                      </span>
-                    </div>
-
                     {/* Title */}
                     <h2
                       key={`title-${active}-${i}`}

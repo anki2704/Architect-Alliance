@@ -86,11 +86,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
         
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 pb-12 border-b border-[var(--text-primary)]/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 pb-7 border-b border-[var(--text-primary)]/10">
           {/* Brand */}
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <img src="/images/brand/logo-new.png" alt="Architecture Alliance" className="h-16 w-auto object-contain bg-transparent shrink-0" />
+              <img src="/images/brand/logo-new.png" alt="Architecture Alliance" className="h-20 w-auto object-contain bg-transparent shrink-0" />
               {/*<div className="flex flex-col justify-between text-left leading-none h-16 py-0.5">
                 <span className="text-[15px] text-[var(--text-primary)] font-Roboto Condensed tracking-[0.18em] uppercase font-extrabold">
                   ARCHITECTURE
@@ -101,23 +101,51 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </span>
               </div>*/}
             </div>
-
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+            <h4 className="font-serif-display text-xl font-bold text-[var(--text-primary)] mb-5">Contact Information</h4>
+            <ul className="space-y-4 text-sm text-[var(--text-secondary)]">
+              <li>
+                <a
+                  href="tel:+918130535793"
+                  className="flex items-start gap-3 hover:text-[var(--accent-warm)] transition-colors"
+                >
+                  <Phone className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
+                  <span className="text-base">+91 8130535793</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=architecturealliance.career@gmail.com"
+                  className="flex items-start gap-3 hover:text-[var(--accent-warm)] transition-colors"
+                >
+                  <Mail className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
+                  <span className="text-base">architecturealliance.career@gmail.com</span>
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
+                <span className="text-base leading-relaxed">
+                  FIRST FLOOR, KAVERY ROYAL MARKET, Swarna Jayanti Nagar| 
+                  <br />
+                  Aligarh, Uttar Pradesh 202001|
+                </span>
+              </li>
+            </ul>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
               {/*Designing Spaces, Building Dreams — Award-winning sustainable architectural studio crafting modern, biophilic structures.*/}
             </p>
 
-            <div className="flex items-center gap-3 pt-2">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-8 h-8 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Instagram className="w-4 h-4" />
+            <div className="flex items-center gap-4 pt-3">
+              <a href="https://www.instagram.com/architecturealliance/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Instagram className="w-5 h-5" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-8 h-8 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Linkedin className="w-4 h-4" />
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Linkedin className="w-5 h-5" />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Facebook className="w-4 h-4" />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Facebook className="w-5 h-5" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-8 h-8 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Twitter className="w-4 h-4" />
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Twitter className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -152,37 +180,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>*/}
 
           {/* Contact Information */}
-          <div className= "h-[350px] text-[var(--text-primary)] text-h-sm">
-            <h4 className="font-serif-display text-base font-bold text-[var(--text-primary)] mb-4">Contact Information</h4>
-            <ul className="space-y-3 text-xs text-[var(--text-secondary)]">
-              <li>
-                <a
-                  href="tel:+918130535793"
-                  className="flex items-start font-extrabold gap-2.5 hover:text-[var(--accent-warm)] transition-colors"
-                >
-                  <Phone className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
-                  <span>+91 8130535793</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=architecturealliance.career@gmail.com"
-                  className="flex items-start font-extrabold gap-2.5 hover:text-[var(--accent-warm)] transition-colors"
-                >
-                  <Mail className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
-                  <span>architecturealliance.career@gmail.com</span>
-                </a>
-              </li>
-              <li className="flex items-start font-extrabold gap-2.5">
-                <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
-                <span>
-                  FIRST FLOOR, KAVERY ROYAL MARKET, Swarna Jayanti Nagar| 
-                  <br />
-                  Aligarh, Uttar Pradesh 202001|
-                </span>
-              </li>
-            </ul>
-          </div>
+          {/*<div className= "h-[350px] text-[var(--text-primary)] text-h-sm">
+          </div>*/}
 
           {/* Office Map — far right */}
           <div>
