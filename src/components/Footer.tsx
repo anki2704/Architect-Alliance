@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand */}
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <img src="/images/brand/logo-new.png" alt="Architecture Alliance" className="h-20 w-auto object-contain bg-transparent shrink-0" />
+              <img src="/images/brand/logo-new.png" alt="Architecture Alliance" className="h-30 w-auto object-contain bg-transparent shrink-0" />
               {/*<div className="flex flex-col justify-between text-left leading-none h-16 py-0.5">
                 <span className="text-[15px] text-[var(--text-primary)] font-Roboto Condensed tracking-[0.18em] uppercase font-extrabold">
                   ARCHITECTURE
@@ -106,22 +106,22 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <a
                   href="tel:+918130535793"
-                  className="flex items-start gap-3 hover:text-[var(--accent-warm)] transition-colors"
+                  className="flex items-start gap-3 font-extrabold hover:text-[var(--accent-warm)] transition-colors"
                 >
-                  <Phone className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
+                  <Phone className="w-5 h-5 mt-0.5git shrink-0 text-[var(--accent-warm)]" />
                   <span className="text-base">+91 8130535793</span>
                 </a>
               </li>
               <li>
                 <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=architecturealliance.career@gmail.com"
-                  className="flex items-start gap-3 hover:text-[var(--accent-warm)] transition-colors"
+                  className="flex items-start gap-3 font-extrabold hover:text-[var(--accent-warm)] transition-colors"
                 >
                   <Mail className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                   <span className="text-base">architecturealliance.career@gmail.com</span>
                 </a>
               </li>
-              <li className="flex items-start gap-3">
+              <li className="flex items-start font-extrabold gap-3">
                 <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                 <span className="text-base leading-relaxed">
                   FIRST FLOOR, KAVERY ROYAL MARKET, Swarna Jayanti Nagar| 
@@ -134,18 +134,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               {/*Designing Spaces, Building Dreams — Award-winning sustainable architectural studio crafting modern, biophilic structures.*/}
             </p>
 
-            <div className="flex items-center gap-4 pt-3">
-              <a href="https://www.instagram.com/architecturealliance/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Instagram className="w-5 h-5" />
+            <div className="flex items-center gap-8 pt-3">
+              <a href="https://www.instagram.com/architecturealliance/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Instagram className="w-10 h-10" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Linkedin className="w-5 h-5" />
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Linkedin className="w-10 h-10" />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Facebook className="w-5 h-5" />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Facebook className="w-10 h-10" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-11 h-11 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Twitter className="w-5 h-5" />
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Twitter className="w-10 h-10" />
               </a>
             </div>
           </div>
@@ -179,9 +179,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </ul>
           </div>*/}
 
-          {/* Contact Information */}
-          {/*<div className= "h-[350px] text-[var(--text-primary)] text-h-sm">
-          </div>*/}
+          {/* Contact information is rendered in the brand column above. */}
 
           {/* Office Map — far right */}
           <div>
