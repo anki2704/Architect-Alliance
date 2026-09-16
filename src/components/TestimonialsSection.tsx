@@ -12,7 +12,6 @@ export const TestimonialsSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Feedback form state
-  const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [quote, setQuote] = useState('');
@@ -73,7 +72,6 @@ export const TestimonialsSection: React.FC = () => {
 
       setTimeout(() => {
         setIsSent(false);
-        setShowForm(false);
       }, 2500);
     } catch (err) {
       console.error('Feedback submit error', err);
@@ -90,130 +88,120 @@ export const TestimonialsSection: React.FC = () => {
       id="testimonials"
       className="py-28 bg-[#f4f4f1] text-[var(--text-primary)] relative"
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-3">
-          Client Feedback
-        </span>
-        <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)] mb-12">
-          What Our Clients Say
-        </h2>
+        <div className="text-center mb-14">
+          <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-3">
+            Client Feedback
+          </span>
+          <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)]">
+            What Our Clients Say
+          </h2>
+        </div>
 
-        {/* Existing testimonials carousel */}
-        {item && (
-          <>
-            <div
-              data-cursor="QUOTE"
-              className="glass-card rounded-3xl p-8 sm:p-12 relative max-w-3xl mx-auto shadow-xl border border-[var(--text-primary)]/10"
-            >
-              <Quote className="w-12 h-12 text-[var(--text-primary)]/10 absolute top-6 left-6" />
+        {/* ===== TWO COLUMN LAYOUT ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-stretch">
+          
+          {/* LEFT → Testimonials Carousel */}
+          <div className="h-full">
+            {item ? (
+              <div
+                data-cursor="QUOTE"
+                className="glass-card rounded-3xl p-8 sm:p-10 relative shadow-xl border border-[var(--text-primary)]/10 h-full flex flex-col"
+              >
+                <Quote className="w-10 h-10 text-[var(--text-primary)]/10 absolute top-5 left-5" />
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.35 }}
-                >
-                  <div className="flex items-center justify-center gap-1 text-[var(--accent-amber)] mb-6">
-                    {[...Array(item.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-current" />
+                <div className="flex-1 flex flex-col justify-center">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.35 }}
+                    >
+                      <div className="flex items-center justify-center gap-1 text-[var(--accent-amber)] mb-5">
+                        {[...Array(item.rating)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 fill-current" />
+                        ))}
+                      </div>
+
+                      <p className="font-serif-display text-lg sm:text-xl text-[var(--text-primary)] font-bold italic leading-relaxed mb-7">
+                        "{item.quote}"
+                      </p>
+
+                      <div className="flex items-center justify-center gap-4">
+                        <img
+                          src={item.avatar}
+                          alt={item.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-[var(--accent-warm)]/30 shadow-md"
+                        />
+                        <div className="text-left">
+                          <h4 className="font-bold text-sm text-[var(--text-primary)]">{item.name}</h4>
+                          <p className="text-xs text-[var(--text-secondary)]">{item.role}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {testimonials.length > 1 && (
+                  <div className="flex items-center justify-between absolute inset-x-2 sm:-inset-x-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <button
+                      onClick={prev}
+                      data-cursor="PREV"
+                      className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--text-primary)]/15 text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center shadow-lg transition-all pointer-events-auto cursor-pointer"
+                      aria-label="Previous Testimonial"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={next}
+                      data-cursor="NEXT"
+                      className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--text-primary)]/15 text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center shadow-lg transition-all pointer-events-auto cursor-pointer"
+                      aria-label="Next Testimonial"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Dots inside the card */}
+                {testimonials.length > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-6">
+                    {testimonials.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentIndex(idx)}
+                        className={`h-2 rounded-full transition-all cursor-pointer ${
+                          currentIndex === idx
+                            ? 'w-8 bg-[var(--accent-warm)]'
+                            : 'w-2 bg-[var(--text-primary)]/20'
+                        }`}
+                      />
                     ))}
                   </div>
-
-                  <p className="font-serif-display text-lg sm:text-2xl text-[var(--text-primary)] font-bold italic leading-relaxed mb-8">
-                    "{item.quote}"
-                  </p>
-
-                  <div className="flex items-center justify-center gap-4">
-                    <img
-                      src={item.avatar}
-                      alt={item.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-[var(--accent-warm)]/30 shadow-md"
-                    />
-                    <div className="text-left">
-                      <h4 className="font-bold text-sm text-[var(--text-primary)]">{item.name}</h4>
-                      <p className="text-xs text-[var(--text-secondary)]">{item.role}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
-              {testimonials.length > 1 && (
-                <div className="flex items-center justify-between absolute inset-x-2 sm:-inset-x-6 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <button
-                    onClick={prev}
-                    data-cursor="PREV"
-                    className="w-11 h-11 rounded-full bg-[var(--bg-card)] border border-[var(--text-primary)]/15 text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center shadow-lg transition-all pointer-events-auto cursor-pointer"
-                    aria-label="Previous Testimonial"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={next}
-                    data-cursor="NEXT"
-                    className="w-11 h-11 rounded-full bg-[var(--bg-card)] border border-[var(--text-primary)]/15 text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center shadow-lg transition-all pointer-events-auto cursor-pointer"
-                    aria-label="Next Testimonial"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {testimonials.length > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8 mb-10">
-                {testimonials.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIndex(idx)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      currentIndex === idx ? 'w-8 bg-[var(--accent-warm)]' : 'w-2 bg-[var(--text-primary)]/20'
-                    }`}
-                  />
-                ))}
+                )}
+              </div>
+            ) : (
+              <div className="glass-card rounded-3xl p-10 text-center text-[var(--text-secondary)] h-full flex items-center justify-center">
+                No testimonials yet. Be the first to share!
               </div>
             )}
-          </>
-        )}
+          </div>
 
-        {/* ── Add Your Feedback ── */}
-        <div className="mt-14 max-w-3xl mx-auto">
-          {!showForm ? (
-            <button
-              onClick={() => setShowForm(true)}
-              data-cursor="FEEDBACK"
-              className="inline-flex items-center gap-2 px-6 py-6 rounded-full bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-mono font-bold uppercase tracking-wider hover:bg-[var(--accent-warm)] transition-all shadow-md cursor-pointer"
-            >
-              <MessageSquarePlus className="w-4 h-4" />
-              Add Your Feedback
-            </button>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-3xl p-8 sm:p-10 shadow-xl border border-[var(--text-primary)]/10 text-left"
-            >
-              <div className="flex items-center justify-between mb-6">
+          {/* RIGHT → Feedback Form (always visible) */}
+          <div className="h-full">
+            <div className="glass-card rounded-3xl p-7 sm:p-8 shadow-xl border border-[var(--text-primary)]/10 text-left h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-6">
+                <MessageSquarePlus className="w-5 h-5 text-[var(--accent-warm)]" />
                 <h3 className="font-serif-display text-xl font-bold text-[var(--text-primary)]">
                   Share Your Experience
                 </h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setError('');
-                    setIsSent(false);
-                  }}
-                  className="text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
-                >
-                  Close
-                </button>
               </div>
 
               {isSent ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
                   <CheckCircle2 className="w-12 h-12 text-[var(--accent-warm)]" />
                   <p className="font-serif-display text-lg font-bold text-[var(--text-primary)]">
                     Thank you for your feedback!
@@ -222,7 +210,7 @@ export const TestimonialsSection: React.FC = () => {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Star rating picker */}
+                  {/* Star rating */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] mb-2">
                       Your Rating *
@@ -312,8 +300,8 @@ export const TestimonialsSection: React.FC = () => {
                   </button>
                 </form>
               )}
-            </motion.div>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </section>

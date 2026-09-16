@@ -161,7 +161,12 @@ export const uploadApi = {
 
 // ---- Team ----
 export const teamApi = {
-  list: () => apiFetch<TeamMember[]>('/team')
+  list: () => apiFetch<TeamMember[]>('/team'),
+  create: (data: Partial<TeamMember>) =>
+    apiFetch<TeamMember>('/team', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<TeamMember>) =>
+    apiFetch<TeamMember>(`/team/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  remove: (id: string) => apiFetch<void>(`/team/${id}`, { method: 'DELETE' })
 };
 
 // ---- Testimonials ----
