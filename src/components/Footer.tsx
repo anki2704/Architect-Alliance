@@ -158,7 +158,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <a
                   href="tel:+918130535793"
-                  className="flex items-start gap-2.5 hover:text-[var(--accent-warm)] transition-colors"
+                  className="flex items-start font-extrabold gap-2.5 hover:text-[var(--accent-warm)] transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                   <span>+91 8130535793</span>
@@ -167,13 +167,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=architecturealliance.career@gmail.com"
-                  className="flex items-start gap-2.5 hover:text-[var(--accent-warm)] transition-colors"
+                  className="flex items-start font-extrabold gap-2.5 hover:text-[var(--accent-warm)] transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                   <span>architecturealliance.career@gmail.com</span>
                 </a>
               </li>
-              <li className="flex items-start gap-2.5">
+              <li className="flex items-start font-extrabold gap-2.5">
                 <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                 <span>
                   FIRST FLOOR, KAVERY ROYAL MARKET, Swarna Jayanti Nagar| 
