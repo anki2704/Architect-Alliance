@@ -1,12 +1,17 @@
-import React, { useState, useRef } from 'react';
-import { X, Loader2, AlertCircle, Plus, Upload, Image as ImageIcon } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Loader2, AlertCircle, Plus, Upload, Trash2, Star, Save } from 'lucide-react';
 import { Project, ProjectCategory } from '../types';
 import { projectsApi, uploadApi, ApiError } from '../services/api';
 
 interface AddProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Called after a successful create. */
   onCreated: (project: Project) => void;
+  /** Called after a successful update. Optional for back-compat with callers that only create. */
+  onUpdated?: (project: Project) => void;
+  /** Pass an existing project to edit it; omit/null to create a new one. */
+  project?: Project | null;
 }
 
 const CATEGORY_OPTIONS: { value: Exclude<ProjectCategory, 'all'>; label: string }[] = [
@@ -24,20 +29,74 @@ const EMPTY_FORM = {
   client: '',
   year: new Date().getFullYear().toString(),
   location: '',
+  country: '',
+  typology: '',
   areaSqFt: '',
   status: '',
   features: ''
 };
 
-export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onCreated }) => {
+/** One image in the gallery being edited — either an already-uploaded URL
+ *  (when editing an existing project) or a freshly-picked local file
+ *  represented as a data: URL (needs uploading on submit). */
+interface GalleryImage {
+  id: string;
+  src: string;
+  isNew: boolean;
+  fileName?: string;
+}
+
+let imgCounter = 0;
+const nextImgId = () => `img-${Date.now()}-${imgCounter++}`;
+
+export const AddProjectModal: React.FC<AddProjectModalProps> = ({
+  isOpen,
+  onClose,
+  onCreated,
+  onUpdated,
+  project
+}) => {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [images, setImages] = useState<GalleryImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFileName, setImageFileName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  const isEditing = !!project;
+
+  // Reset / prefill the form whenever the modal opens (for add) or whenever
+  // a different project is passed in (for edit).
+  useEffect(() => {
+    if (!isOpen) return;
+    if (project) {
+      setForm({
+        title: project.title,
+        category: (project.category as Exclude<ProjectCategory, 'all'>) || 'residential',
+        description: project.description,
+        client: project.client,
+        year: project.year,
+        location: project.location,
+        country: project.country ?? '',
+        typology: project.typology ?? '',
+        areaSqFt: project.areaSqFt,
+        status: project.status ?? '',
+        features: (project.features || []).join(', ')
+      });
+      const gallery =
+        project.imageGallery && project.imageGallery.length > 0
+          ? project.imageGallery
+          : project.imageUrl
+            ? [project.imageUrl]
+            : [];
+      setImages(gallery.map((src) => ({ id: nextImgId(), src, isNew: false })));
+    } else {
+      setForm(EMPTY_FORM);
+      setImages([]);
+    }
+    setErrorMsg('');
+  }, [isOpen, project]);
+
+  useEffect(() => {
     if (isOpen && (window as any).lenis) (window as any).lenis.stop();
     return () => {
       if (isOpen && (window as any).lenis) (window as any).lenis.start();
@@ -50,33 +109,46 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Please select an image file (JPG, PNG, WebP, etc.).');
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      setErrorMsg('Image is too large. Maximum size is 8 MB.');
-      return;
-    }
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setErrorMsg('');
-    setImageFileName(file.name);
+    const picked = Array.from(files);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    picked.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        setErrorMsg('Please select image files only (JPG, PNG, WebP, etc.).');
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        setErrorMsg(`"${file.name}" is too large. Maximum size is 8 MB per image.`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImages((prev) => [
+          ...prev,
+          { id: nextImgId(), src: reader.result as string, isNew: true, fileName: file.name }
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Allow re-selecting the same file again later
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const clearImage = () => {
-    setImagePreview(null);
-    setImageFileName('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+  const removeImage = (id: string) => {
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  const makeCover = (id: string) => {
+    setImages((prev) => {
+      const target = prev.find((img) => img.id === id);
+      if (!target) return prev;
+      return [target, ...prev.filter((img) => img.id !== id)];
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,42 +167,59 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
       return;
     }
 
-    if (!imagePreview) {
-      setErrorMsg('Please select a cover image from your device.');
+    if (images.length === 0) {
+      setErrorMsg('Please add at least one image.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const { url: imageUrl } = await uploadApi.image(
-        imagePreview,
-        form.title.trim() || imageFileName
-      );
+      // Only re-upload images that were freshly picked (data: URLs). Images
+      // that already have a real URL (editing an existing project) are kept
+      // as-is so we don't re-upload unchanged files.
+      const uploadedGallery: string[] = [];
+      for (const img of images) {
+        if (img.isNew) {
+          const { url } = await uploadApi.image(img.src, form.title.trim() || img.fileName);
+          uploadedGallery.push(url);
+        } else {
+          uploadedGallery.push(img.src);
+        }
+      }
 
       const payload: Partial<Project> = {
         title: form.title.trim(),
         category: form.category,
         description: form.description.trim(),
-        imageUrl,
+        imageUrl: uploadedGallery[0],
+        imageGallery: uploadedGallery,
         client: form.client.trim(),
         year: form.year.trim(),
         location: form.location.trim(),
+        country: form.country.trim() || undefined,
+        typology: form.typology.trim() || undefined,
         areaSqFt: form.areaSqFt.trim(),
         status: form.status.trim() || undefined,
         features: form.features
           .split(',')
           .map((f) => f.trim())
-          .filter(Boolean),
-        imageGallery: [imageUrl]
+          .filter(Boolean)
       };
 
-      const created = await projectsApi.create(payload);
-      onCreated(created);
-      setForm(EMPTY_FORM);
-      clearImage();
+      if (isEditing && project) {
+        const updated = await projectsApi.update(project.id, payload);
+        onUpdated?.(updated);
+      } else {
+        const created = await projectsApi.create(payload);
+        onCreated(created);
+      }
       onClose();
     } catch (err) {
-      setErrorMsg(err instanceof ApiError ? err.message : 'Could not create project. Please try again.');
+      setErrorMsg(
+        err instanceof ApiError
+          ? err.message
+          : `Could not ${isEditing ? 'update' : 'create'} project. Please try again.`
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +236,7 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
       <div className="w-full max-w-2xl max-h-[94vh] relative flex flex-col">
         <button
           onClick={onClose}
-          aria-label="Close add project modal"
+          aria-label="Close project modal"
           className="absolute -top-3 -right-3 z-10 w-9 h-9 rounded-full bg-[var(--bg-card)] text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center cursor-pointer shadow-lg border border-[var(--text-primary)]/15 transition-all"
         >
           <X className="w-4 h-4 stroke-[2.5]" />
@@ -159,10 +248,12 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
               Admin · Project Gallery
             </span>
             <h2 className="font-serif-display text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-2">
-              Add a New Project
+              {isEditing ? 'Edit Project' : 'Add a New Project'}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
-              Fill in the project details and pick a cover image directly from your device.
+              {isEditing
+                ? 'Update the project details and images below.'
+                : 'Fill in the project details and add images directly from your device.'}
             </p>
           </div>
 
@@ -215,64 +306,72 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
                 />
               </div>
 
-              {/* Cover Image — file picker (no URL required) */}
+              {/* Images — multi-file picker, first image is the cover */}
               <div>
-                <label className="block text-xs font-mono font-bold text-[var(--text-primary)] uppercase tracking-wider mb-2">
-                  Cover Image *
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-mono font-bold text-[var(--text-primary)] uppercase tracking-wider">
+                    Project Images * <span className="normal-case font-normal text-[var(--text-muted)]">(first = cover)</span>
+                  </label>
+                  <span className="text-[11px] text-[var(--text-muted)]">{images.length} added</span>
+                </div>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handleFileChange}
+                  multiple
+                  onChange={handleFilesChange}
                   className="hidden"
                 />
 
-                {!imagePreview ? (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex flex-col items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-[var(--text-primary)]/20 bg-[var(--bg-main)] hover:border-[var(--accent-warm)] hover:bg-[var(--accent-warm)]/5 transition-all cursor-pointer"
-                  >
-                    <Upload className="w-8 h-8 text-[var(--accent-warm)]" />
-                    <span className="text-sm font-semibold text-[var(--text-primary)]">
-                      Click to choose image from device
-                    </span>
-                    <span className="text-[11px] text-[var(--text-muted)]">
-                      JPG, PNG, WebP · Max 8 MB · Phone / PC / Tablet
-                    </span>
-                  </button>
-                ) : (
-                  <div className="relative rounded-xl overflow-hidden border border-[var(--text-primary)]/15 bg-[var(--bg-elevated)]">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-2 rounded-lg bg-[var(--bg-card)] text-[var(--text-primary)] text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                {images.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 mb-3">
+                    {images.map((img, i) => (
+                      <div
+                        key={img.id}
+                        className="relative aspect-square rounded-xl overflow-hidden border border-[var(--text-primary)]/15 bg-[var(--bg-elevated)] group"
                       >
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        Change
-                      </button>
-                      <button
-                        type="button"
-                        onClick={clearImage}
-                        className="px-3 py-2 rounded-lg bg-red-500/100 text-[var(--text-primary)] text-xs font-bold cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    {imageFileName && (
-                      <p className="absolute bottom-2 left-2 right-2 text-[10px] text-[var(--text-primary)] bg-[var(--text-primary)]/50 rounded px-2 py-1 truncate">
-                        {imageFileName}
-                      </p>
-                    )}
+                        <img src={img.src} alt={`Project image ${i + 1}`} className="w-full h-full object-cover" />
+                        {i === 0 && (
+                          <span className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[var(--accent-warm)] text-[var(--text-on-accent)] text-[9px] font-bold uppercase tracking-wider">
+                            <Star className="w-2.5 h-2.5 fill-current" /> Cover
+                          </span>
+                        )}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+                          {i !== 0 && (
+                            <button
+                              type="button"
+                              onClick={() => makeCover(img.id)}
+                              className="px-2 py-1 rounded-md bg-[var(--bg-card)] text-[var(--text-primary)] text-[9px] font-bold cursor-pointer"
+                            >
+                              Set as cover
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(img.id)}
+                            className="px-2 py-1 rounded-md bg-red-500 text-white text-[9px] font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 className="w-2.5 h-2.5" /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex flex-col items-center justify-center gap-2 px-4 py-6 rounded-xl border-2 border-dashed border-[var(--text-primary)]/20 bg-[var(--bg-main)] hover:border-[var(--accent-warm)] hover:bg-[var(--accent-warm)]/5 transition-all cursor-pointer"
+                >
+                  <Upload className="w-6 h-6 text-[var(--accent-warm)]" />
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">
+                    {images.length > 0 ? 'Add more images' : 'Click to choose images from device'}
+                  </span>
+                  <span className="text-[11px] text-[var(--text-muted)]">
+                    JPG, PNG, WebP · Max 8 MB each · Select multiple at once
+                  </span>
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -313,13 +412,28 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
                   <input
                     type="text"
                     required
-                    placeholder="City, Country"
+                    placeholder="City, State"
                     value={form.location}
                     onChange={setField('location')}
                     className="w-full px-4 py-3 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-warm)] bg-[var(--bg-card)] border border-[var(--text-primary)]/15"
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-mono font-bold text-[var(--text-primary)] uppercase tracking-wider mb-2">
+                    Country <span className="normal-case font-normal text-[var(--text-muted)]">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. India"
+                    value={form.country}
+                    onChange={setField('country')}
+                    className="w-full px-4 py-3 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-warm)] bg-[var(--bg-card)] border border-[var(--text-primary)]/15"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono font-bold text-[var(--text-primary)] uppercase tracking-wider mb-2">
                     Area (sq ft) *
@@ -330,6 +444,19 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
                     placeholder="e.g. 4,200 sq ft"
                     value={form.areaSqFt}
                     onChange={setField('areaSqFt')}
+                    className="w-full px-4 py-3 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-warm)] bg-[var(--bg-card)] border border-[var(--text-primary)]/15"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-bold text-[var(--text-primary)] uppercase tracking-wider mb-2">
+                    Typology <span className="normal-case font-normal text-[var(--text-muted)]">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Private Residence"
+                    value={form.typology}
+                    onChange={setField('typology')}
                     className="w-full px-4 py-3 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-warm)] bg-[var(--bg-card)] border border-[var(--text-primary)]/15"
                   />
                 </div>
@@ -377,7 +504,11 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClos
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Saving Project...
+                    <Loader2 className="w-4 h-4 animate-spin" /> {isEditing ? 'Saving Changes...' : 'Saving Project...'}
+                  </>
+                ) : isEditing ? (
+                  <>
+                    <Save className="w-4 h-4" /> Save Changes
                   </>
                 ) : (
                   <>

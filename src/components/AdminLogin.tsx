@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authApi, setStoredAuth, ApiError } from '../services/api';
 import { User } from '../types';
 import { Loader2, Lock, Eye, EyeOff, ArrowLeft, RefreshCw } from 'lucide-react';
@@ -11,8 +10,6 @@ interface AdminLoginProps {
 type Step = 'login' | 'forgot' | 'otp' | 'reset';
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
-  const navigate = useNavigate();
-
   const [step, setStep] = useState<Step>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,7 +77,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
       setStoredAuth(user, token);
       onLoginSuccess(user);
-      navigate('/');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Login failed. Please try again.');
     } finally {
@@ -105,7 +101,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
       setStoredAuth(user, token);
       onLoginSuccess(user);
-      navigate('/');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Invalid OTP. Please try again.');
     } finally {
