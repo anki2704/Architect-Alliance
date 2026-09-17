@@ -186,7 +186,7 @@ export default function App() {
 
   const handleNavigate = (sectionId: string) => {
     if (sectionId === 'dashboard') {
-      if (currentUser) setIsDashboardOpen(true);
+      if (currentUser) openDashboard();
       return;
     }
     if (sectionId === 'about') {
@@ -247,15 +247,44 @@ export default function App() {
     authApi.logout().catch(() => {});
     clearStoredAuth();
     setCurrentUser(null);
-    setIsDashboardOpen(false);
   };
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
     if (user.role === 'admin' || user.role === 'designer') {
-      setIsDashboardOpen(true);
+      // Replace the hidden /admin-login entry so browser Back never lands
+      // back on it — it goes to whatever the user was on before logging in.
+      navigate('/', { replace: true, state: { dashboardOpen: true } });
+    } else {
+      navigate('/', { replace: true });
     }
   };
+
+  /** Opens the dashboard as a real history entry so the browser Back
+   *  button closes it (instead of leaving the app entirely). */
+  const openDashboard = () => {
+    navigate(location.pathname + location.search, {
+      state: { ...((location.state as Record<string, unknown>) || {}), dashboardOpen: true }
+    });
+  };
+
+  /** Closes the dashboard the same way Back would — by popping the history
+   *  entry that opened it, so in-app "Close" and the browser Back button
+   *  behave identically. */
+  const closeDashboard = () => {
+    if ((location.state as { dashboardOpen?: boolean } | null)?.dashboardOpen) {
+      navigate(-1);
+    } else {
+      setIsDashboardOpen(false);
+    }
+  };
+
+  // Keep isDashboardOpen in sync with history state — this is what makes
+  // the browser Back button close the dashboard instead of jumping to
+  // whatever route happened to be underneath it.
+  useEffect(() => {
+    setIsDashboardOpen(Boolean((location.state as { dashboardOpen?: boolean } | null)?.dashboardOpen));
+  }, [location]);
 
   // Dedicated admin login page — completely hidden from public UI
   if (location.pathname === '/admin-login') {
@@ -366,7 +395,7 @@ export default function App() {
       {currentUser && (
         <DashboardView
           isOpen={isDashboardOpen}
-          onClose={() => setIsDashboardOpen(false)}
+          onClose={closeDashboard}
           currentUser={currentUser}
           onLogout={handleLogout}
         />

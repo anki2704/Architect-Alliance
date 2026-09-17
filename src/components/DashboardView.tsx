@@ -21,6 +21,7 @@ import {
 import { ProjectDetailView } from './ProjectDetailView';
 import { AddJournalModal } from './AddJournalModal';
 import { AddTeamModal } from './AddTeamModal';
+import { AddProjectModal } from './AddProjectModal';
 import {
   Calendar,
   Mail,
@@ -29,6 +30,7 @@ import {
   Users,
   Trash2,
   Plus,
+  Pencil,
   LayoutDashboard,
   FolderKanban,
   Bell,
@@ -104,6 +106,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingArticle, setEditingArticle] = useState<JournalArticle | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const [isAddingDesigner, setIsAddingDesigner] = useState(false);
   const [newDesignerName, setNewDesignerName] = useState('');
@@ -317,16 +321,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-[var(--bg-main)] text-[var(--text-primary)]">
       {/* Top bar */}
-      <header className="h-14 sm:h-16 shrink-0 border-b border-[var(--text-primary)]/10 bg-[var(--bg-surface)] flex items-center justify-between px-3 sm:px-6">
+      <header className="h-25 sm:h-27 shrink-0 border-b border-[var(--text-primary)]/10 bg-[var(--bg-surface)] flex items-center justify-between px-3 sm:px-6">
         <div className="flex items-center gap-3 min-w-0">
           <img
             src="/images/brand/logo-new.png"
             alt="Architecture Alliance"
-            className="h-9 w-auto object-contain rounded"
+            className="h-25 w-auto object-contain rounded"
           />
-          <span className="font-serif-display font-bold text-sm sm:text-base tracking-wide truncate">
+          {/*<span className="font-serif-display font-bold text-sm sm:text-base tracking-wide truncate">
             Architecture Alliance
-          </span>
+          </span>*/}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -341,10 +345,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 });
                 setRoleMenuOpen(false);
               }}
-              className="relative w-9 h-9 rounded-full bg-[var(--bg-card)]/5 border border-[var(--text-primary)]/10 flex items-center justify-center hover:bg-[var(--bg-card)]/10 cursor-pointer"
+              className="relative w-13 h-13 rounded-full bg-[var(--bg-card)]/5 border border-[var(--text-primary)]/10 flex items-center justify-center hover:bg-[var(--bg-card)]/10 cursor-pointer"
               title="Notifications"
             >
-              <Bell className="w-4 h-4 text-[var(--text-secondary)]" />
+              <Bell className="w-8 h-8 text-[var(--text-secondary)]" />
               {showNotifDot && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
               )}
@@ -439,7 +443,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span className="px-2 py-0.5 rounded-full bg-[var(--bg-card)] text-[var(--text-on-accent)] text-[10px] font-bold uppercase">
                 {role}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+              <ChevronDown className="w-8 h-8 text-[var(--text-muted)]" />
             </button>
             {roleMenuOpen && (
               <div className="absolute right-0 mt-2 w-44 rounded-xl bg-[var(--bg-card)] border border-[var(--text-primary)]/15 shadow-xl py-1 z-20">
@@ -622,17 +626,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div>
                       <h1 className="font-serif-display text-2xl font-bold">Projects</h1>
                       <p className="text-xs text-[var(--text-muted)] mt-1">
-                        Tap a project to open full details
+                        Tap a project to open full details · use Edit to change it
                       </p>
                     </div>
-                    <span className="text-xs text-slate-500">{projects.length} total</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-500">{projects.length} total</span>
+                      {(role === 'admin' || role === 'designer') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProject(null);
+                            setIsProjectModalOpen(true);
+                          }}
+                          className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--accent-warm)] transition-colors cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Add Project
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Card grid — clickable */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {projects.length === 0 ? (
                       <p className="text-sm text-slate-500 col-span-full py-8 text-center">
-                        No projects yet. Add projects from the website gallery when logged in.
+                        No projects yet. Use “Add Project” above to create one.
                       </p>
                     ) : (
                       projects.map((p) => (
@@ -655,21 +674,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] font-bold uppercase tracking-wider">
                               {p.category}
                             </span>
-                            {(role === 'admin' || role === 'designer') && (
-                              <button
-                                type="button"
-                                onClick={(e) => handleDeleteProject(p.id, p.title, e)}
-                                className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/100/80 text-[var(--text-primary)] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                            {p.imageGallery && p.imageGallery.length > 1 && (
+                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] font-semibold flex items-center gap-1">
+                                <Image className="w-3 h-3" /> {p.imageGallery.length}
+                              </span>
                             )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            {/* Overlay under buttons so Edit/Delete stay clickable */}
+                            <div className="absolute inset-0 z-10 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                               <span className="px-3 py-1.5 rounded-full bg-[var(--bg-card)] text-[var(--text-on-accent)] text-[11px] font-bold flex items-center gap-1.5">
                                 <Eye className="w-3.5 h-3.5" /> Open project
                               </span>
                             </div>
+                            {(role === 'admin' || role === 'designer') && (
+                              <div className="absolute top-2 right-2 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingProject(p);
+                                    setIsProjectModalOpen(true);
+                                  }}
+                                  className="p-1.5 rounded-full bg-[var(--bg-card)]/90 text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] cursor-pointer"
+                                  title="Edit"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleDeleteProject(p.id, p.title, e)}
+                                  className="p-1.5 rounded-full bg-red-500/80 text-[var(--text-primary)] cursor-pointer"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
                           </div>
                           <div className="p-4">
                             <h3 className="font-semibold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors">
@@ -1319,6 +1358,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
           )
         }
+      />
+
+      {/* Add / edit project overlay */}
+      <AddProjectModal
+        isOpen={isProjectModalOpen}
+        project={editingProject}
+        onClose={() => {
+          setIsProjectModalOpen(false);
+          setEditingProject(null);
+        }}
+        onCreated={(proj) => setProjects((prev) => [proj, ...prev])}
+        onUpdated={(proj) => {
+          setProjects((prev) => prev.map((p) => (p.id === proj.id ? proj : p)));
+          setSelectedProject((prev) => (prev && prev.id === proj.id ? proj : prev));
+        }}
       />
     </div>
   );

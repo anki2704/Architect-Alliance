@@ -21,6 +21,32 @@ function stripId<T extends { id?: string }>(item: T) {
 
 async function seed() {
   await connectDB();
+
+  // Safety net: this script WIPES every collection below before reinserting
+  // demo content. Once real projects / real user accounts exist, running
+  // `npm run seed` again by mistake would delete all of it. Refuse to run
+  // destructively unless the caller explicitly confirms.
+  const [projectCount, userCount] = await Promise.all([
+    Project.countDocuments(),
+    User.countDocuments()
+  ]);
+  const hasExistingData = projectCount > 0 || userCount > 0;
+  const confirmed = process.argv.includes('--force') || process.env.CONFIRM_RESEED === 'yes';
+
+  if (hasExistingData && !confirmed) {
+    console.error(
+      '\n[Seed] Refusing to run: this database already has data ' +
+      `(${projectCount} project(s), ${userCount} user(s)).\n` +
+      '  Running this script would DELETE all projects, users, bookings, enquiries,\n' +
+      '  team members, testimonials, and journal posts, then replace them with demo data.\n\n' +
+      '  If you really want to wipe the database and reset it to demo content, run:\n' +
+      '    npm run seed -- --force\n' +
+      '  (or set CONFIRM_RESEED=yes)\n'
+    );
+    await mongoose.disconnect();
+    process.exit(1);
+  }
+
   console.log('[Seed] Connected. Clearing existing collections...');
 
   await Promise.all([

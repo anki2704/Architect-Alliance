@@ -52,7 +52,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
-      className="bg-black text-white min-h-screen overflow-x-hidden"
+      data-lenis-prevent
+      className="fixed inset-0 z-[80] bg-black text-white overflow-y-auto overscroll-contain"
       style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
     >
       {/* Fixed Close */}
