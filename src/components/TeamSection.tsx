@@ -20,7 +20,7 @@ type FounderNoteProps = {
 
 const FounderNote: React.FC<FounderNoteProps> = ({
   image,
-  title = 'PERSONAL NOTE FROM OUR FOUNDER',
+  title = 'FOUNDER\'S NOTE',
   paragraphs,
   quote,
   name,
@@ -40,7 +40,7 @@ const FounderNote: React.FC<FounderNoteProps> = ({
 
   return (
     <section className="relative bg-[#f5f5f5] text-black py-16 sm:py-20 lg:py-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           className={`flex flex-col ${
             imageOnRight ? 'lg:flex-row-reverse' : 'lg:flex-row'
@@ -59,10 +59,10 @@ const FounderNote: React.FC<FounderNoteProps> = ({
           </motion.div>
 
           {/* Content */}
-          <div className="w-full lg:flex-1 flex flex-col justify-center">
+          <div className="w-full lg:flex-1 flex flex-col justify-center translate-y-[-60px]">
             <motion.h2
               {...fade(0.05)}
-              className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-semibold tracking-tight leading-[1.1] text-black mb-8 sm:mb-10"
+              className="text-7xl sm:text-xl lg:text-[3.75rem] xl:text-7xl font-semibold tracking-tight leading-[1.1] text-black mb-8 sm:mb-10"
             >
               {title.split(' ').slice(0, 2).join(' ')}
               <br />
@@ -73,24 +73,24 @@ const FounderNote: React.FC<FounderNoteProps> = ({
               {...fade(0.1)}
               className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-10 sm:mb-12"
             >
-              <p className="text-[15px] sm:text-base leading-relaxed text-black/80 font-normal">
+              <p className="text-5x1 sm:text-base leading-relaxed text-black/80 font-normal">
                 {paragraphs[0]}
               </p>
-              <p className="text-[15px] sm:text-base leading-relaxed text-black/80 font-normal">
+              <p className="text-5x1 sm:text-base leading-relaxed text-black/80 font-normal">
                 {paragraphs[1]}
               </p>
             </motion.div>
 
             <motion.blockquote
               {...fade(0.15)}
-              className="text-[15px] sm:text-base leading-relaxed text-black/70 italic mb-8 sm:mb-10 max-w-xl"
+              className="text-5x1 sm:text-base leading-relaxed text-black/70 italic mb-8 sm:mb-10 max-w-xl"
             >
               “{quote}”
             </motion.blockquote>
 
             <motion.p
               {...fade(0.2)}
-              className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-black"
+              className="text-5xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-black"
             >
               {name}
             </motion.p>
@@ -135,13 +135,13 @@ export const TeamSection: React.FC = () => {
     <>
       {/* ========== 1. Personal Note from Founder ========== */}
       <FounderNote
-        title="PERSONAL NOTE FROM OUR FOUNDER"
+        title="FOUNDER'S NOTE"
         paragraphs={[
           "write somthing about the founder and his vision for the company. This could include his background, experience, and what inspired him to start the company.",
           "and add somthing about the company's mission, values, and what sets it apart from competitors. This could also include any notable achievements or milestones the company has reached under his leadership.",
         ]}
         quote="Architecture is about more than buildings—it's about creating spaces that inspire and enhance lives."
-        name="Mr. Somansh Pandey."
+        name="Ar. Somansh Pandey."
         image="/images/team/Somansh_panday.jpeg"
         imageOnRight={true}
       />

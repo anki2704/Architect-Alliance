@@ -16,7 +16,8 @@ import {
   teamApi,
   testimonialsApi,
   journalApi,
-  ApiError
+  ApiError,
+  mediaUrl
 } from '../services/api';
 import { ProjectDetailView } from './ProjectDetailView';
 import { AddJournalModal } from './AddJournalModal';
@@ -667,7 +668,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         >
                           <div className="relative aspect-[16/10] bg-[var(--bg-card)]">
                             <img
-                              src={p.imageUrl}
+                              src={mediaUrl(p.imageUrl)}
                               alt={p.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -1247,7 +1248,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           className="group relative aspect-square rounded-xl overflow-hidden border border-[var(--text-primary)]/10 bg-[var(--bg-card)] cursor-pointer hover:border-[var(--accent-warm)]/50"
                         >
                           <img
-                            src={m.url}
+                            src={mediaUrl(m.url)}
                             alt={m.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />

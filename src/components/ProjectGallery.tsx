@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AddProjectModal } from './AddProjectModal';
-import { projectsApi } from '../services/api';
+import { projectsApi, mediaUrl } from '../services/api';
 
 interface ProjectGalleryProps {
   projects: Project[];
@@ -31,6 +31,18 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProjectCategory>('all');
   const [viewMode, setViewMode] = useState<'stack' | 'grid'>('stack');
+
+  // Mobile / tablet: default to grid (stack scroll is awkward on small screens)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => {
+      if (mq.matches) setViewMode('grid');
+    };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
   const [likesCount, setLikesCount] = useState<Record<string, number>>({
     'proj-1': 28,
     'proj-2': 42,
@@ -184,7 +196,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
           <h2
             className="font-extrabold tracking-tight text-black mb-3 translate-y-[-80px]"
             style={{
-              fontSize: 'clamp(70px, 14vw, 80px)',
+              fontSize: 'clamp(40px, 12vw, 80px)',
               letterSpacing: '-0.03em',
               lineHeight: 0.88,
             }}
@@ -303,7 +315,8 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                       className="w-full grid grid-cols-1 md:grid-cols-[60%_40%] overflow-hidden cursor-pointer"
                       style={{
                         maxWidth: 1400,
-                        height: 'min(680px, calc(100vh - 100px))',
+                        height: 'min(680px, calc(100svh - 80px))',
+                        maxHeight: 'calc(100svh - 80px)',
                         background: '#000',
                         border: '1px solid #292929',
                         borderRadius: 22,
@@ -352,7 +365,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                         <h3
                           className="font-bold text-white"
                           style={{
-                            fontSize: 'clamp(36px, 5vw, 72px)',
+                            fontSize: 'clamp(28px, 6vw, 72px)',
                             lineHeight: 0.88,
                             letterSpacing: '-0.06em',
                             margin: 0,
@@ -420,9 +433,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                         style={{ padding: 15 }}
                       >
                         <img
-                          src={proj.imageUrl}
+                          src={mediaUrl(proj.imageUrl)}
                           alt={proj.title}
-                          className="w-full h-full object-cover block"
+                          className="w-full h-full object-contain block bg-black"
                           style={{ borderRadius: 15 }}
                           draggable={false}
                         />
@@ -448,7 +461,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-[#111]">
                   <img
-                    src={proj.imageUrl}
+                    src={mediaUrl(proj.imageUrl)}
                     alt={proj.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -538,7 +551,7 @@ function SingleProjectCard({
       onClick={() => onOpen(proj)}
       className="grid grid-cols-1 md:grid-cols-[60%_40%] overflow-hidden cursor-pointer"
       style={{
-        height: 'min(680px, calc(100vh - 200px))',
+        height: 'min(680px, calc(100svh - 120px))',
         background: '#000',
         border: '1px solid #292929',
         borderRadius: 22,
@@ -619,9 +632,9 @@ function SingleProjectCard({
 
       <div className="relative order-1 md:order-1 overflow-hidden" style={{ padding: 15 }}>
         <img
-          src={proj.imageUrl}
+          src={mediaUrl(proj.imageUrl)}
           alt={proj.title}
-          className="w-full h-full object-cover block"
+          className="w-full h-full object-contain block bg-black"
           style={{ borderRadius: 15 }}
           draggable={false}
         />

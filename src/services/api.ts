@@ -12,9 +12,25 @@ const TOKEN_KEY = 'architech_token';
 const USER_KEY = 'architech_user';
 
 // ====================== IMPORTANT ======================
-// Production mein Render URL use hoga, local mein blank (same domain)
-const API_BASE = import.meta.env.VITE_API_URL || '';
+// Production: set VITE_API_URL to your Render API URL (Vercel env).
+// Local: leave blank when frontend+API share same origin.
+export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 // =======================================================
+
+/**
+ * Resolve media paths so /uploads/... always hits the API host (Render),
+ * not the Vercel frontend (which returns index.html → black images).
+ */
+export function mediaUrl(url?: string | null): string {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('blob:') || /^https?:\/\//i.test(url)) {
+    return url;
+  }
+  if (url.startsWith('/uploads') && API_BASE) {
+    return `${API_BASE}${url}`;
+  }
+  return url;
+}
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Project } from '../types';
+import { mediaUrl } from '../services/api';
 import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -31,15 +32,16 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   const nextProject = projects[(currentIndex + 1) % projects.length];
 
   // Gallery images
-  const gallery: string[] =
+  const gallery: string[] = (
     project.imageGallery && project.imageGallery.length > 0
       ? project.imageGallery
       : project.imageUrl
         ? [project.imageUrl]
-        : [];
+        : []
+  ).map((u) => mediaUrl(u)).filter(Boolean);
 
-  const total = 1 + gallery.length; // hero + images
-  const heroImage = gallery[0] || project.imageUrl || '';
+  const total = Math.max(gallery.length, 1);
+  const heroImage = gallery[0] || mediaUrl(project.imageUrl) || '';
 
   // Title split for large display (like "TROPICAL / CAFE")
   const titleLines = project.title.trim().split(/\s+/);
@@ -68,7 +70,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
       {/* ─── 01: HERO (details only) ─── */}
       <section
         className="relative w-full overflow-hidden"
-        style={{ height: '100vh', marginBottom: 12 }}
+        style={{ height: '100svh', minHeight: '100dvh', marginBottom: 12 }}
       >
         {/* Background */}
         <div
@@ -169,7 +171,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                 COMPLETION
               </b>
               <span style={{ color: '#ddd', fontSize: 12, lineHeight: 1.5 }}>
-                {project.year || project.status || '—'}
+                {[project.year, project.status].filter(Boolean).join(' · ') || '—'}
               </span>
             </div>
 
@@ -230,15 +232,16 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
 
       {/* ─── 02+: FULLSCREEN IMAGES ─── */}
       {gallery.map((src, i) => {
-        const num = i + 2;
+        const num = i + 1;
         const isLast = i === gallery.length - 1;
         return (
           <section
             key={i}
             className="relative w-full overflow-hidden group"
             style={{
-              height: '100vh',
-              background: '#111',
+              height: '100svh',
+              minHeight: '70vh',
+              background: '#0a0a0a',
               marginBottom: isLast ? 0 : 12,
             }}
           >
@@ -248,12 +251,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: 'contain',
                 display: 'block',
-                transform: 'scale(1.06)',
-                transition: 'transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1)',
+                transition: 'transform 0.8s ease',
               }}
-              className="group-hover:!scale-[1.02]"
+              className="group-hover:scale-[1.01]"
+              loading="lazy"
             />
 
             <span
