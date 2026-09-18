@@ -31,8 +31,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
     projects[(currentIndex - 1 + projects.length) % projects.length];
   const nextProject = projects[(currentIndex + 1) % projects.length];
 
-  // Gallery images
-  const gallery: string[] = (
+  // All project images
+  const allImages: string[] = (
     project.imageGallery && project.imageGallery.length > 0
       ? project.imageGallery
       : project.imageUrl
@@ -40,8 +40,11 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
         : []
   ).map((u) => mediaUrl(u)).filter(Boolean);
 
-  const total = Math.max(gallery.length, 1);
-  const heroImage = gallery[0] || mediaUrl(project.imageUrl) || '';
+  // First image is used only as the hero.
+  // It is intentionally excluded from the gallery to avoid showing it twice.
+  const heroImage = allImages[0] || mediaUrl(project.imageUrl) || '';
+  const gallery = allImages.slice(1);
+  const total = gallery.length;
 
   // Title split for large display (like "TROPICAL / CAFE")
   const titleLines = project.title.trim().split(/\s+/);
