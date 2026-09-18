@@ -1,112 +1,149 @@
 import { Response } from 'express';
-import fs from 'fs';
-import path from 'path';
 import { AuthedRequest } from '../middleware/auth';
 
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
-
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
 /**
- * Build a public absolute URL for an uploaded file.
- * Prefer PUBLIC_BASE_URL (e.g. https://your-api.onrender.com).
- * Falls back to request host so Vercel frontend can load images from Render.
+ * Upload image directly to Cloudinary.
+ *
+ * Required environment variables:
+ * CLOUDINARY_CLOUD_NAME
+ * CLOUDINARY_UPLOAD_PRESET
+ *
+ * The upload preset must be UNSIGNED.
  */
-function publicUrl(req: AuthedRequest, relativePath: string): string {
-  const base =
-    (process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || '').replace(/\/$/, '');
-  if (base) return `${base}${relativePath}`;
-  const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
-  const host = req.headers['x-forwarded-host'] || req.get('host');
-  if (host) return `${proto}://${host}${relativePath}`;
-  return relativePath;
-}
-
-/**
- * Optional Cloudinary upload (persistent — survives Render restarts).
- * Set CLOUDINARY_CLOUD_NAME + CLOUDINARY_UPLOAD_PRESET (unsigned preset).
- */
-async function uploadToCloudinary(dataUrl: string, filename?: string): Promise<string | null> {
+async function uploadToCloudinary(
+  dataUrl: string,
+  filename?: string
+): Promise<string> {
   const cloud = process.env.CLOUDINARY_CLOUD_NAME;
   const preset = process.env.CLOUDINARY_UPLOAD_PRESET;
-  if (!cloud || !preset) return null;
+
+  if (!cloud) {
+    throw new Error('CLOUDINARY_CLOUD_NAME is not configured on the server.');
+  }
+
+  if (!preset) {
+    throw new Error('CLOUDINARY_UPLOAD_PRESET is not configured on the server.');
+  }
 
   const body = new URLSearchParams();
   body.set('file', dataUrl);
   body.set('upload_preset', preset);
-  if (filename) body.set('public_id', filename.replace(/[^a-zA-Z0-9-_]/g, '_').slice(0, 40));
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`, {
+  if (filename) {
+    const safeFilename = filename
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[^a-zA-Z0-9-_]/g, '_')
+      .slice(0, 80);
+
+    if (safeFilename) {
+      body.set('public_id', safeFilename);
+    }
+  }
+
+  const cloudinaryUrl =
+    `https://api.cloudinary.com/v1_1/${cloud}/image/upload`;
+
+  const response = await fetch(cloudinaryUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
     body
   });
-  if (!res.ok) {
-    const err = await res.text();
-    console.error('Cloudinary upload failed:', err);
-    return null;
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    console.error('Cloudinary upload failed:', result);
+
+    throw new Error(
+      result?.error?.message ||
+      `Cloudinary upload failed with status ${response.status}`
+    );
   }
-  const data = (await res.json()) as { secure_url?: string };
-  return data.secure_url || null;
+
+  if (!result?.secure_url) {
+    console.error('Cloudinary response missing secure_url:', result);
+
+    throw new Error('Cloudinary did not return a secure image URL.');
+  }
+
+  return result.secure_url;
 }
 
 /**
  * POST /api/upload
- * Body: { image: "data:image/...;base64,...", filename?: string }
+ *
+ * Body:
+ * {
+ *   image: "data:image/jpeg;base64,...",
+ *   filename?: "project-image.jpg"
+ * }
  */
-export async function uploadImage(req: AuthedRequest, res: Response) {
+export async function uploadImage(
+  req: AuthedRequest,
+  res: Response
+) {
   try {
-    const { image, filename } = req.body as { image?: string; filename?: string };
+    const { image, filename } = req.body as {
+      image?: string;
+      filename?: string;
+    };
 
     if (!image || typeof image !== 'string') {
-      return res.status(400).json({ error: 'Image data is required (base64 data URL).' });
+      return res.status(400).json({
+        error: 'Image data is required (base64 data URL).'
+      });
     }
 
-    const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+    const match = image.match(
+      /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/
+    );
+
     if (!match) {
-      return res.status(400).json({ error: 'Invalid image format. Send a base64 data URL.' });
+      return res.status(400).json({
+        error: 'Invalid image format. Send a base64 data URL.'
+      });
     }
 
-    const mimeType = match[1];
     const base64Data = match[2];
     const buffer = Buffer.from(base64Data, 'base64');
 
+    // Maximum 8 MB
     if (buffer.length > 8 * 1024 * 1024) {
-      return res.status(400).json({ error: 'Image is too large. Maximum size is 8 MB.' });
+      return res.status(400).json({
+        error: 'Image is too large. Maximum size is 8 MB.'
+      });
     }
 
-    // Prefer Cloudinary when configured (files never disappear on Render restart)
-    const cloudUrl = await uploadToCloudinary(image, filename);
-    if (cloudUrl) {
-      return res.status(201).json({ url: cloudUrl });
-    }
+    /**
+     * Cloudinary is mandatory.
+     *
+     * We intentionally do NOT save the image to Render's local
+     * public/uploads folder because Render's local filesystem is
+     * not persistent across restarts/redeploys.
+     */
+    const cloudinaryUrl = await uploadToCloudinary(
+      image,
+      filename
+    );
 
-    const extMap: Record<string, string> = {
-      'image/jpeg': 'jpg',
-      'image/jpg': 'jpg',
-      'image/png': 'png',
-      'image/webp': 'webp',
-      'image/gif': 'gif',
-      'image/svg+xml': 'svg'
-    };
-    const ext = extMap[mimeType] || 'jpg';
+    console.log(
+      '[Cloudinary] Image uploaded successfully:',
+      cloudinaryUrl
+    );
 
-    const safeBase =
-      (filename || 'project')
-        .replace(/[^a-zA-Z0-9-_]/g, '_')
-        .slice(0, 40) || 'project';
-    const uniqueName = `${safeBase}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const filePath = path.join(UPLOADS_DIR, uniqueName);
-
-    fs.writeFileSync(filePath, buffer);
-
-    const relative = `/uploads/${uniqueName}`;
-    const url = publicUrl(req, relative);
-    res.status(201).json({ url });
+    return res.status(201).json({
+      url: cloudinaryUrl
+    });
   } catch (err) {
-    console.error('Upload error:', err);
-    res.status(500).json({ error: 'Could not save image.', details: (err as Error).message });
+    console.error('[Upload] Error:', err);
+
+    return res.status(500).json({
+      error:
+        err instanceof Error
+          ? err.message
+          : 'Could not upload image to Cloudinary.'
+    });
   }
 }
