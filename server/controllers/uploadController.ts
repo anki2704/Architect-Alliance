@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { randomUUID } from 'crypto';
 import { AuthedRequest } from '../middleware/auth';
 
 /**
@@ -29,6 +30,9 @@ async function uploadToCloudinary(
   body.set('file', dataUrl);
   body.set('upload_preset', preset);
 
+  // IMPORTANT: make every Cloudinary public_id unique.
+  // Using only the original filename can overwrite an older image when
+  // multiple uploads use the same filename (for example image.jpg).
   if (filename) {
     const safeFilename = filename
       .replace(/\.[^/.]+$/, '')
@@ -36,7 +40,8 @@ async function uploadToCloudinary(
       .slice(0, 80);
 
     if (safeFilename) {
-      body.set('public_id', safeFilename);
+      const uniqueId = `${Date.now()}-${randomUUID().slice(0, 8)}`;
+      body.set('public_id', `${safeFilename}-${uniqueId}`);
     }
   }
 
