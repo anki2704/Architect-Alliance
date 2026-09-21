@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
+import { url } from 'inspector';
 
 interface HeroSectionProps {
   onNavigate: (sectionId: string) => void;
@@ -20,19 +21,19 @@ const HERO_IMAGES = [
     tag: 'Architecture / Residential',
   },
   {
-    url: 'https://images.unsplash.com/photo-1775112862850-02b1f72edcb1?auto=format&fit=crop&fm=jpg&q=92&w=2400',
+    url: '/images/hero/image2.png',
     title: 'Form & Texture',
     location: 'Architecture Alliance',
     tag: 'Interior / Contemporary',
   },
   {
-    url: 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&fm=jpg&q=92&w=2400',
+    url: '/images/hero/image3.png',
     title: 'Designed to Feel',
     location: 'Architecture Alliance',
     tag: 'Hospitality / Design',
   },
   {
-    url: 'https://images.unsplash.com/photo-1774267916884-afae166d49b3?auto=format&fit=crop&fm=jpg&q=92&w=2400',
+    url: '/images/hero/image4.jpeg',
     title: 'Living in Form',
     location: 'Architecture Alliance',
     tag: 'Residential / Modern',
