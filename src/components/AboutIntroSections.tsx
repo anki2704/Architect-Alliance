@@ -155,12 +155,12 @@ export const AboutIntroSections: React.FC = () => {
           {...fade(0, 20)}
           //className="flex justify-between items-center gap-6 border-t border-[#ccc] pt-5"
         >
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase shrink-0">
-            ABOUT ARCHITECTURE ALLIANCE
+          <span className="text-[20px] font-bold tracking-[0.2em] uppercase shrink-0 border-b border-[#080808] pb-1">
+            ABOUT US
           </span>
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase shrink-0">
+          {/*<span className="text-[10px] font-bold tracking-[0.2em] uppercase shrink-0">
             EST. 2020
-          </span>
+          </span>*/}
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-[7vw] items-end mt-16 lg:mt-8">
