@@ -39,13 +39,13 @@ const HERO_IMAGES = [
     tag: 'Residential / Modern',
   },
   {
-    url: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=92',
+    url: '/images/hero/image5.jpeg',
     title: 'Less but Better',
     location: 'Architecture Alliance',
     tag: 'Material / Detail',
   },
   {
-    url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2400&q=92&sat=-15',
+    url: '/images/hero/image6.jpeg',
     title: 'Light in Space',
     location: 'Architecture Alliance',
     tag: 'Architecture / Space',
