@@ -3,6 +3,7 @@ import { TeamMember } from '../types';
 import { teamApi } from '../services/api';
 import { Instagram, Twitter, MessageCircle, Plus } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { AboutIntroSections } from './AboutIntroSections';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -133,12 +134,15 @@ export const TeamSection: React.FC = () => {
 
   return (
     <>
+      {/* ========== 0. About Intro (same content as about HTML) ========== */}
+      <AboutIntroSections />
+
       {/* ========== 1. Personal Note from Founder ========== */}
       <FounderNote
         title="FOUNDER'S NOTE"
         paragraphs={[
-          "At Architecture Alliance, I believe architecture is more than creating buildings—it is about creating spaces that become a meaningful part of people's lives.My approach to design begins with understanding people, their aspirations, and the way they experience space. A well-designed environment should not only look beautiful but also feel natural, functional, and timeless.For me, architecture is an art of balance—between form and function, creativity and practicality, simplicity and expression. I am drawn to clean lines, natural light, honest materials, and thoughtful detailing. Every project has its own identity, and our responsibility is to discover and express it rather than impose a predetermined style.Whether designing a home, workplace, commercial space, or interior, we focus on creating environments where every element has a purpose. From the overall form to the smallest detail, our decisions are guided by context, functionality, and the experience we want the space to create.",
-          "I believe great design does not have to be excessive. Sometimes, a carefully framed view, a play of light, a beautiful material, or a well-proportioned space can create more impact than ornamentation.At Architecture Alliance, our vision is simple: to create spaces that function effortlessly, age gracefully, and leave a lasting impression.For me, design is not about following trends. It is about creating something that feels right—in its form, function, materiality, and relationship with the people who experience it.Architecture is where imagination meets purpose. We strive to make that meeting meaningful.",
+          "At Architecture Alliance, I believe architecture is about creating meaningful spaces that enrich everyday life.My design approach is rooted in understanding people, context, and purpose. I see architecture as a balance of form and function, creativity and practicality, simplicity and expression.I am drawn to clean forms, natural light, honest materials, balanced proportions, and thoughtful detailing. Every project has its own identity, and our role is to bring that identity to life with clarity and purpose.",
+          "For me, great design is not about excess or trends. It is about creating spaces that feel natural, functional, timeless, and built to last.At Architecture Alliance, we strive to make every project a thoughtful meeting of imagination, functionality, and craftsmanship.",
         ]}
         quote="“Less is only more where more is no good.”"
         name="Ar. Somansh Pandey."

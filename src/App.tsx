@@ -120,15 +120,17 @@ export default function App() {
   // Keep activeSection in sync with current route
   useEffect(() => {
     if (location.pathname === '/team') {
-      setActiveSection('team');
-      window.scrollTo(0, 0);
-      if ((window as any).lenis) {
-        (window as any).lenis.scrollTo(0, { immediate: true });
+      setActiveSection((prev) => (prev === 'about' ? 'about' : 'team'));
+      if (location.hash !== '#about') {
+        window.scrollTo(0, 0);
+        if ((window as any).lenis) {
+          (window as any).lenis.scrollTo(0, { immediate: true });
+        }
       }
     } else if (location.pathname.startsWith('/project/')) {
       setActiveSection('projects');
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   useEffect(() => {
     // Only run scroll observer on home page
@@ -189,8 +191,23 @@ export default function App() {
       if (currentUser) openDashboard();
       return;
     }
+    // ABOUT → Team page (About intro sections sit above Team)
     if (sectionId === 'about') {
-      sectionId = 'footer';
+      navigate('/team#about');
+      setActiveSection('about');
+      setTimeout(() => {
+        const el = document.getElementById('about');
+        if (el) {
+          if ((window as any).lenis) {
+            (window as any).lenis.scrollTo(el, { offset: 0, duration: 1.0 });
+          } else {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 150);
+      return;
     }
     // Contact / enquiry is handled via toggle, not scroll
     if (sectionId === 'enquiry' || sectionId === 'contact') {
