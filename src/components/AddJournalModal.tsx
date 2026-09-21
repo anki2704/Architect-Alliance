@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Loader2, AlertCircle, Plus, Upload, Image as ImageIcon, Save } from 'lucide-react';
 import { JournalArticle } from '../types';
 import { journalApi, uploadApi, ApiError } from '../services/api';
+import { RichTextEditor } from './RichTextEditor';
 
 interface AddJournalModalProps {
   isOpen: boolean;
@@ -99,6 +100,20 @@ export const AddJournalModal: React.FC<AddJournalModalProps> = ({
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  // Images placed inside the article body (image icon in the editor)
+  const uploadContentImage = async (file: File): Promise<string> => {
+    if (!file.type.startsWith('image/')) throw new Error('Not an image');
+    if (file.size > 8 * 1024 * 1024) throw new Error('Image is too large (max 8 MB)');
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+    const { url } = await uploadApi.image(dataUrl, file.name);
+    return url;
   };
 
   const clearImage = () => {
@@ -345,14 +360,12 @@ export const AddJournalModal: React.FC<AddJournalModalProps> = ({
 
               <div>
                 <label className="block text-xs font-mono font-bold text-[var(--text-primary)] uppercase tracking-wider mb-2">
-                  Full Article <span className="normal-case font-normal text-[var(--text-muted)]">(optional — shown on the article's own page; leave blank to just show the excerpt there)</span>
+                  Full Article <span className="normal-case font-normal text-[var(--text-muted)]">(optional — paste your article here as it is; use the image icon to add photos anywhere. Leave blank to just show the excerpt)</span>
                 </label>
-                <textarea
-                  rows={10}
-                  placeholder="Write the full article here. Leave a blank line between paragraphs."
+                <RichTextEditor
                   value={form.content}
-                  onChange={setField('content')}
-                  className="w-full px-4 py-3 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-warm)] bg-[var(--bg-card)] border border-[var(--text-primary)]/15 resize-y font-sans"
+                  onChange={(html) => setForm((prev) => ({ ...prev, content: html }))}
+                  onUploadImage={uploadContentImage}
                 />
               </div>
 

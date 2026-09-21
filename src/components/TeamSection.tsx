@@ -137,10 +137,10 @@ export const TeamSection: React.FC = () => {
       <FounderNote
         title="FOUNDER'S NOTE"
         paragraphs={[
-          "write somthing about the founder and his vision for the company. This could include his background, experience, and what inspired him to start the company.",
-          "and add somthing about the company's mission, values, and what sets it apart from competitors. This could also include any notable achievements or milestones the company has reached under his leadership.",
+          "At Architecture Alliance, I believe architecture is more than creating buildings—it is about creating spaces that become a meaningful part of people's lives.My approach to design begins with understanding people, their aspirations, and the way they experience space. A well-designed environment should not only look beautiful but also feel natural, functional, and timeless.For me, architecture is an art of balance—between form and function, creativity and practicality, simplicity and expression. I am drawn to clean lines, natural light, honest materials, and thoughtful detailing. Every project has its own identity, and our responsibility is to discover and express it rather than impose a predetermined style.Whether designing a home, workplace, commercial space, or interior, we focus on creating environments where every element has a purpose. From the overall form to the smallest detail, our decisions are guided by context, functionality, and the experience we want the space to create.",
+          "I believe great design does not have to be excessive. Sometimes, a carefully framed view, a play of light, a beautiful material, or a well-proportioned space can create more impact than ornamentation.At Architecture Alliance, our vision is simple: to create spaces that function effortlessly, age gracefully, and leave a lasting impression.For me, design is not about following trends. It is about creating something that feels right—in its form, function, materiality, and relationship with the people who experience it.Architecture is where imagination meets purpose. We strive to make that meeting meaningful.",
         ]}
-        quote="Architecture is about more than buildings—it's about creating spaces that inspire and enhance lives."
+        quote="“Less is only more where more is no good.”"
         name="Ar. Somansh Pandey."
         image="/images/team/Somansh_panday.jpeg"
         imageOnRight={true}
