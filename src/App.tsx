@@ -285,15 +285,19 @@ export default function App() {
     });
   };
 
-  /** Closes the dashboard the same way Back would — by popping the history
-   *  entry that opened it, so in-app "Close" and the browser Back button
-   *  behave identically. */
+  /** Closes the dashboard while staying on the site and keeping the user logged in.
+   *  Never uses navigate(-1) after login (that could jump to /admin-login or leave
+   *  the app and look like a logout). Browser Back still works via the location
+   *  state sync effect below. */
   const closeDashboard = () => {
-    if ((location.state as { dashboardOpen?: boolean } | null)?.dashboardOpen) {
-      navigate(-1);
-    } else {
-      setIsDashboardOpen(false);
-    }
+    setIsDashboardOpen(false);
+    const prev = (location.state as Record<string, unknown> | null) || {};
+    // Drop dashboardOpen from history state; stay on same URL; keep session.
+    const { dashboardOpen: _removed, ...rest } = prev;
+    navigate(location.pathname + location.search, {
+      replace: true,
+      state: Object.keys(rest).length ? rest : null,
+    });
   };
 
   // Keep isDashboardOpen in sync with history state — this is what makes

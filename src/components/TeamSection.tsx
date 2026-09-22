@@ -59,11 +59,11 @@ const FounderNote: React.FC<FounderNoteProps> = ({
             </div>
           </motion.div>
 
-          {/* Content */}
-          <div className="w-full lg:flex-1 flex flex-col justify-center translate-y-[-60px]">
+          {/* Content — no negative translate on mobile (was cutting off text) */}
+          <div className="w-full lg:flex-1 flex flex-col justify-center lg:-translate-y-[40px]">
             <motion.h2
               {...fade(0.05)}
-              className="text-7xl sm:text-xl lg:text-[3.75rem] xl:text-7xl font-semibold tracking-tight leading-[1.1] text-black mb-8 sm:mb-10"
+              className="text-3xl sm:text-4xl lg:text-[3.75rem] xl:text-6xl font-semibold tracking-tight leading-[1.1] text-black mb-6 sm:mb-8 lg:mb-10"
             >
               {title.split(' ').slice(0, 2).join(' ')}
               <br />
@@ -72,26 +72,26 @@ const FounderNote: React.FC<FounderNoteProps> = ({
 
             <motion.div
               {...fade(0.1)}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-10 sm:mb-12"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 mb-8 sm:mb-12"
             >
-              <p className="text-5x1 sm:text-base leading-relaxed text-black/80 font-normal">
+              <p className="text-sm sm:text-base leading-relaxed text-black/80 font-normal">
                 {paragraphs[0]}
               </p>
-              <p className="text-5x1 sm:text-base leading-relaxed text-black/80 font-normal">
+              <p className="text-sm sm:text-base leading-relaxed text-black/80 font-normal">
                 {paragraphs[1]}
               </p>
             </motion.div>
 
             <motion.blockquote
               {...fade(0.15)}
-              className="text-5x1 sm:text-base leading-relaxed text-black/70 italic mb-8 sm:mb-10 max-w-xl"
+              className="text-sm sm:text-base leading-relaxed text-black/70 italic mb-6 sm:mb-10 max-w-xl"
             >
               “{quote}”
             </motion.blockquote>
 
             <motion.p
               {...fade(0.2)}
-              className="text-5xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-black"
+              className="text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-black"
             >
               {name}
             </motion.p>
