@@ -111,7 +111,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, children }
               <img
                 src={img.url}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover object-[72%_center] lg:object-[75%_center]"
+                className="absolute inset-0 w-full h-full object-cover object-center sm:object-[60%_center] lg:object-[75%_center]"
                 style={{ imageRendering: 'auto' }}
                 loading={i === 0 ? 'eager' : 'lazy'}
                 draggable={false}

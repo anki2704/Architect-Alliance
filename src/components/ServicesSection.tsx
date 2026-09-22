@@ -87,11 +87,11 @@ export const ServicesSection: React.FC = () => {
     >
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
 
-                {/* Top row */}
-        <div className="font-bold tracking-tight text-[var(--accent-warm)] mb-3 translate-y-[-30px] translate-x-[30px] ">
+                {/* Top row — no large positive translate on mobile (was pushing title off) */}
+        <div className="font-bold tracking-tight text-[var(--accent-warm)] mb-3 sm:translate-y-[-12px] lg:translate-y-[-30px] lg:translate-x-[20px]">
           <span
             style={{
-              fontSize: 'clamp(30px, 8vw, 60px)',
+              fontSize: 'clamp(28px, 8vw, 60px)',
               letterSpacing: '-0.03em',
               lineHeight: 0.88,
             }}
@@ -105,7 +105,7 @@ export const ServicesSection: React.FC = () => {
           className="relative overflow-hidden"
           style={{
             height: 'min(82vh, 780px)',
-            minHeight: 560,
+            minHeight: 'min(480px, 85dvh)',
             border: '1px solid #d5d5d0',
             borderRadius: 22,
             background: '#f7f7f5',
@@ -351,10 +351,17 @@ export const ServicesSection: React.FC = () => {
           }
         }
 
-        /* Mobile: space for bottom tab bar */
+        /* Mobile: space for bottom tab bar + tighter content */
         @media (max-width: 767px) {
           #services article main {
             padding-bottom: 100px !important;
+          }
+          #services article main h2 {
+            font-size: clamp(28px, 9vw, 48px) !important;
+          }
+          #services article main p {
+            font-size: 13px !important;
+            margin: 12px 0 10px !important;
           }
         }
       `}</style>

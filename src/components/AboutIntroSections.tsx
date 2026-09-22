@@ -228,7 +228,7 @@ export const AboutIntroSections: React.FC = () => {
         <div className="max-w-[1100px]">
           <motion.div
             {...fade(0)}
-            className="text-[10px] font-bold tracking-[0.2em] uppercase"
+            className="text-[25px] font-bold tracking-[0.2em] uppercase shrink-0 border-b border-[#080808] pb-1"
           >
             01 — OUR PHILOSOPHY
           </motion.div>
@@ -259,7 +259,7 @@ export const AboutIntroSections: React.FC = () => {
           <div>
             <motion.div
               {...fade(0)}
-              className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/80"
+              className="text-[25px] font-bold tracking-[0.2em] uppercase shrink-0 border-b border-[#white] pb-1 text-white/80"
             >
               02 — OUR APPROACH
             </motion.div>
@@ -306,7 +306,7 @@ export const AboutIntroSections: React.FC = () => {
       <section className="px-[6vw] py-[7vw]">
         <motion.div
           {...fade(0)}
-          className="text-[10px] font-bold tracking-[0.2em] uppercase"
+          className="text-[25px] font-bold tracking-[0.2em] uppercase shrink-0 border-b border-[#080808] pb-1"
         >
           03 — DESIGN LANGUAGE
         </motion.div>
@@ -346,7 +346,7 @@ export const AboutIntroSections: React.FC = () => {
       <section className="px-[6vw] py-[7vw]">
         <motion.div
           {...fade(0)}
-          className="text-[10px] font-bold tracking-[0.2em] uppercase"
+          className="text-[25px] font-bold tracking-[0.2em] uppercase shrink-0 border-b border-[#080808] pb-1"
         >
           04 — FROM CONCEPT TO EXECUTION
         </motion.div>
