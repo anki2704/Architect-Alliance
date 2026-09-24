@@ -45,8 +45,10 @@ import {
   Star,
   MapPin,
   Download,
-  X
+  X,
+  CheckCircle2
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface DashboardViewProps {
   isOpen: boolean;
@@ -126,7 +128,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         bookingsApi.list(),
         projectsApi.list(),
         teamApi.list(),
-        testimonialsApi.list(),
+        testimonialsApi.adminList(),
         journalApi.list()
       ];
       if (role === 'admin') {
@@ -185,41 +187,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleExportEnquiries = () => {
     if (messages.length === 0) return;
-
-    // Export enquiries as CSV using the browser's native Blob/URL APIs.
-    // This removes the vulnerable xlsx dependency while keeping the export
-    // compatible with Microsoft Excel, Google Sheets, and LibreOffice.
-    const headers = ['Name', 'Email', 'Contact', 'Subject', 'Message', 'Date'];
-
-    const escapeCsv = (value: string) => {
-      const normalized = String(value ?? '').replace(/\r?\n|\r/g, '\n');
-      return `"${normalized.replace(/"/g, '""')}"`;
-    };
-
-    const rows = messages.map((m) =>
-      [
-        m.name,
-        m.email,
-        m.contact || '',
-        m.subject || '',
-        m.message,
-        new Date(m.createdAt).toLocaleString()
-      ]
-        .map(escapeCsv)
-        .join(',')
-    );
-
-    const csv = '\uFEFF' + [headers.map(escapeCsv).join(','), ...rows].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = `enquiries-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    const rows = messages.map((m) => ({
+      Name: m.name,
+      Email: m.email,
+      Contact: m.contact || '',
+      Subject: m.subject || '',
+      Message: m.message,
+      Date: new Date(m.createdAt).toLocaleString()
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    worksheet['!cols'] = [
+      { wch: 20 }, // Name
+      { wch: 28 }, // Email
+      { wch: 16 }, // Contact
+      { wch: 22 }, // Subject
+      { wch: 60 }, // Message
+      { wch: 20 } // Date
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enquiries');
+    const stamp = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(workbook, `enquiries-${stamp}.xlsx`);
   };
 
   const handleAddDesigner = async (e: React.FormEvent) => {
@@ -229,8 +217,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       setDesignerFormError('Name, email, and password are required.');
       return;
     }
-    if (newDesignerPassword.length < 6) {
-      setDesignerFormError('Password must be at least 6 characters.');
+    if (newDesignerPassword.length < 12) {
+      setDesignerFormError('Password must be at least 12 characters and include upper/lowercase, a number, and a special character.');
       return;
     }
     setIsSavingDesigner(true);
@@ -1222,6 +1210,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             ))}
                           </div>
                           <p className="text-sm text-slate-200 leading-relaxed">“{t.quote}”</p>
+                          <div className="flex items-center justify-between gap-3 pt-1">
+                            <span className={`text-[10px] font-mono uppercase tracking-wider ${t.approved !== false ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {t.approved !== false ? 'Approved' : 'Pending approval'}
+                            </span>
+                            {t.approved === false && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    const updated = await testimonialsApi.update(t.id, { approved: true });
+                                    setTestimonials((prev) => prev.map((item) => item.id === updated.id ? updated : item));
+                                  } catch (err) {
+                                    console.error('Failed to approve testimonial', err);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-500 hover:bg-emerald-500/20 transition-colors"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                              </button>
+                            )}
+                          </div>
                           <div className="flex items-center gap-3 pt-1">
                             {t.avatar && (
                               <img

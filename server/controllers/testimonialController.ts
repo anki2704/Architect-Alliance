@@ -3,21 +3,49 @@ import { Testimonial } from '../models/Testimonial';
 import { AuthedRequest } from '../middleware/auth';
 
 export async function listTestimonials(_req: AuthedRequest, res: Response) {
-  const testimonials = await Testimonial.find().sort({ createdAt: -1 });
+  const testimonials = await Testimonial.find({ $or: [{ approved: true }, { approved: { $exists: false } }] }).sort({ createdAt: -1 }).limit(50);
+  res.json(testimonials.map((t) => t.toJSON()));
+}
+
+export async function listAdminTestimonials(_req: AuthedRequest, res: Response) {
+  const testimonials = await Testimonial.find().sort({ createdAt: -1 }).limit(200);
   res.json(testimonials.map((t) => t.toJSON()));
 }
 
 export async function createTestimonial(req: AuthedRequest, res: Response) {
   try {
-    const testimonial = await Testimonial.create(req.body);
-    res.status(201).json(testimonial.toJSON());
+    const body = req.body || {};
+    const quote = typeof body.quote === 'string' ? body.quote.trim().slice(0, 2000) : '';
+    const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : '';
+    const role = typeof body.role === 'string' ? body.role.trim().slice(0, 100) : 'Client';
+    const rating = Number(body.rating);
+
+    if (!quote || !name) {
+      return res.status(400).json({ error: 'Name and feedback are required.' });
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be an integer from 1 to 5.' });
+    }
+
+    const testimonial = await Testimonial.create({
+      quote,
+      name,
+      role: role || 'Client',
+      avatar: typeof body.avatar === 'string' ? body.avatar.slice(0, 500) : undefined,
+      rating,
+      approved: false
+    });
+    // Keep public submissions hidden until an admin approves them.
+    res.status(201).json({ ...testimonial.toJSON(), approved: false });
   } catch (err) {
-    res.status(400).json({ error: 'Could not create testimonial', details: (err as Error).message });
+    console.error('[Testimonials] Create failed', err);
+    res.status(400).json({ error: 'Could not create testimonial.' });
   }
 }
 
 export async function updateTestimonial(req: AuthedRequest, res: Response) {
-  const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const allowed = (({ quote, name, role, avatar, rating, approved }) => ({ quote, name, role, avatar, rating, approved }))(req.body || {});
+  const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, allowed, { new: true, runValidators: true });
   if (!testimonial) return res.status(404).json({ error: 'Testimonial not found' });
   res.json(testimonial.toJSON());
 }

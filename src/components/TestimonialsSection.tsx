@@ -54,7 +54,7 @@ export const TestimonialsSection: React.FC = () => {
         name.trim()
       )}&background=C97B4E&color=fff&size=128`;
 
-      const created = await testimonialsApi.create({
+      await testimonialsApi.create({
         name: name.trim(),
         role: role.trim() || 'Client',
         quote: quote.trim(),
@@ -62,7 +62,7 @@ export const TestimonialsSection: React.FC = () => {
         avatar: avatarUrl || DEFAULT_AVATAR,
       });
 
-      setTestimonials((prev) => [created, ...prev]);
+      // New submissions require admin approval before appearing publicly.
       setCurrentIndex(0);
       setIsSent(true);
       setName('');

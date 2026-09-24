@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - main
-      - master
+      - ankita
       - nischal
 
   pull_request:
     branches:
       - main
-      - master
+      - ankita
       - nischal
       
 jobs:

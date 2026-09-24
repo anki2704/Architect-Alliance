@@ -101,13 +101,11 @@ export async function uploadImage(
       });
     }
 
-    const match = image.match(
-      /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/
-    );
+    const match = image.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/i);
 
     if (!match) {
       return res.status(400).json({
-        error: 'Invalid image format. Send a base64 data URL.'
+        error: 'Only JPEG, PNG, and WebP images are allowed.'
       });
     }
 
@@ -145,10 +143,7 @@ export async function uploadImage(
     console.error('[Upload] Error:', err);
 
     return res.status(500).json({
-      error:
-        err instanceof Error
-          ? err.message
-          : 'Could not upload image to Cloudinary.'
+      error: 'Could not upload image to Cloudinary.'
     });
   }
 }
