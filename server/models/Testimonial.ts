@@ -7,6 +7,8 @@ export interface ITestimonial extends Document {
   role: string;
   avatar: string;
   rating: number;
+  /** false = pending admin approval; true / legacy missing = visible publicly */
+  approved: boolean;
 }
 
 const DEFAULT_AVATAR =
@@ -18,7 +20,8 @@ const testimonialSchema = new Schema<ITestimonial>(
     name: { type: String, required: true },
     role: { type: String, required: true, default: 'Client' },
     avatar: { type: String, required: false, default: DEFAULT_AVATAR },
-    rating: { type: Number, min: 1, max: 5, default: 5 }
+    rating: { type: Number, min: 1, max: 5, default: 5 },
+    approved: { type: Boolean, default: true, index: true }
   },
   baseSchemaOptions
 );

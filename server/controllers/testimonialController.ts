@@ -3,7 +3,11 @@ import { Testimonial } from '../models/Testimonial';
 import { AuthedRequest } from '../middleware/auth';
 
 export async function listTestimonials(_req: AuthedRequest, res: Response) {
-  const testimonials = await Testimonial.find({ $or: [{ approved: true }, { approved: { $exists: false } }] }).sort({ createdAt: -1 }).limit(50);
+  const testimonials = await Testimonial.find({
+    $or: [{ approved: true }, { approved: { $exists: false } }]
+  })
+    .sort({ createdAt: -1 })
+    .limit(50);
   res.json(testimonials.map((t) => t.toJSON()));
 }
 
@@ -33,10 +37,11 @@ export async function createTestimonial(req: AuthedRequest, res: Response) {
       role: role || 'Client',
       avatar: typeof body.avatar === 'string' ? body.avatar.slice(0, 500) : undefined,
       rating,
+      // Public submissions stay hidden until an admin approves them.
       approved: false
     });
-    // Keep public submissions hidden until an admin approves them.
-    res.status(201).json({ ...testimonial.toJSON(), approved: false });
+
+    res.status(201).json(testimonial.toJSON());
   } catch (err) {
     console.error('[Testimonials] Create failed', err);
     res.status(400).json({ error: 'Could not create testimonial.' });
@@ -44,8 +49,25 @@ export async function createTestimonial(req: AuthedRequest, res: Response) {
 }
 
 export async function updateTestimonial(req: AuthedRequest, res: Response) {
-  const allowed = (({ quote, name, role, avatar, rating, approved }) => ({ quote, name, role, avatar, rating, approved }))(req.body || {});
-  const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, allowed, { new: true, runValidators: true });
+  const body = req.body || {};
+  const allowed: Record<string, unknown> = {};
+
+  if (typeof body.quote === 'string') allowed.quote = body.quote.trim().slice(0, 2000);
+  if (typeof body.name === 'string') allowed.name = body.name.trim().slice(0, 100);
+  if (typeof body.role === 'string') allowed.role = body.role.trim().slice(0, 100);
+  if (typeof body.avatar === 'string') allowed.avatar = body.avatar.trim().slice(0, 500);
+  if (body.rating !== undefined) {
+    const rating = Number(body.rating);
+    if (Number.isInteger(rating) && rating >= 1 && rating <= 5) {
+      allowed.rating = rating;
+    }
+  }
+  if (typeof body.approved === 'boolean') allowed.approved = body.approved;
+
+  const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, allowed, {
+    new: true,
+    runValidators: true
+  });
   if (!testimonial) return res.status(404).json({ error: 'Testimonial not found' });
   res.json(testimonial.toJSON());
 }
