@@ -47,7 +47,6 @@ import {
   Download,
   X
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 interface DashboardViewProps {
   isOpen: boolean;
@@ -186,27 +185,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleExportEnquiries = () => {
     if (messages.length === 0) return;
-    const rows = messages.map((m) => ({
-      Name: m.name,
-      Email: m.email,
-      Contact: m.contact || '',
-      Subject: m.subject || '',
-      Message: m.message,
-      Date: new Date(m.createdAt).toLocaleString()
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    worksheet['!cols'] = [
-      { wch: 20 }, // Name
-      { wch: 28 }, // Email
-      { wch: 16 }, // Contact
-      { wch: 22 }, // Subject
-      { wch: 60 }, // Message
-      { wch: 20 } // Date
-    ];
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enquiries');
-    const stamp = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(workbook, `enquiries-${stamp}.xlsx`);
+
+    // Export enquiries as CSV using the browser's native Blob/URL APIs.
+    // This removes the vulnerable xlsx dependency while keeping the export
+    // compatible with Microsoft Excel, Google Sheets, and LibreOffice.
+    const headers = ['Name', 'Email', 'Contact', 'Subject', 'Message', 'Date'];
+
+    const escapeCsv = (value: string) => {
+      const normalized = String(value ?? '').replace(/\r?\n|\r/g, '\n');
+      return `"${normalized.replace(/"/g, '""')}"`;
+    };
+
+    const rows = messages.map((m) =>
+      [
+        m.name,
+        m.email,
+        m.contact || '',
+        m.subject || '',
+        m.message,
+        new Date(m.createdAt).toLocaleString()
+      ]
+        .map(escapeCsv)
+        .join(',')
+    );
+
+    const csv = '\uFEFF' + [headers.map(escapeCsv).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = `enquiries-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const handleAddDesigner = async (e: React.FormEvent) => {
