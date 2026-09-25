@@ -1,5 +1,3 @@
-import dns from "dns";
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
 import 'dotenv/config';
 import { connectDB } from '../config/db';
 import { Project } from '../models/Project';
@@ -62,17 +60,9 @@ async function seed() {
   console.log('[Seed] Inserting projects, team, testimonials, journal posts...');
   await Project.insertMany(INITIAL_PROJECTS.map(stripId));
   await TeamMember.insertMany(TEAM_MEMBERS.map((m, i) => ({ ...m, order: i })));
-  await Testimonial.insertMany(TESTIMONIALS);
+  await Testimonial.insertMany(TESTIMONIALS.map((t) => ({ ...t, approved: true })));
   await JournalPost.insertMany(JOURNAL_POSTS);
 
-  const anyFallback = Object.values(SEED_CREDENTIALS).some((c) => c.usedFallback);
-  if (anyFallback) {
-    console.warn(
-      '\n[Seed] WARNING: one or more accounts are using the default local-dev password.\n' +
-      '  Set SEED_ADMIN_PASSWORD / SEED_DESIGNER_PASSWORD / SEED_CUSTOMER_PASSWORD in .env\n' +
-      '  to real, unique passwords before seeding a production database.\n'
-    );
-  }
 
   console.log('[Seed] Creating users (admin / designer / customer)...');
   // Use create() (not insertMany) so the password-hashing pre-save hook runs.
@@ -104,9 +94,9 @@ async function seed() {
   });*/
 
   console.log('\n[Seed] Done! Login credentials:');
-  console.log(`  Admin:     ${admin.email} / ${SEED_CREDENTIALS.admin.usedFallback ? '(default dev password)' : '(from .env)'}`);
-  console.log(`  Designer:  ${designer.email} / ${SEED_CREDENTIALS.designer.usedFallback ? '(default dev password)' : '(from .env)'}`);
-  console.log(`  Customer:  ${customer.email} / ${SEED_CREDENTIALS.customer.usedFallback ? '(default dev password)' : '(from .env)'}\n`);
+  console.log(`  Admin:     ${admin.email} / (from environment)`);
+  console.log(`  Designer:  ${designer.email} / (from environment)`);
+  console.log(`  Customer:  ${customer.email} / (from environment)`);
 
   await mongoose.disconnect();
   process.exit(0);

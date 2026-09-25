@@ -16,6 +16,7 @@ export interface IUser extends Document {
   lockUntil?: Date | null;
   otpCode?: string | null;
   otpExpires?: Date | null;
+  otpAttempts: number;
   matchPassword(candidate: string): Promise<boolean>;
 }
 
@@ -30,14 +31,15 @@ const userSchema = new Schema<IUser>(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
     },
-    password: { type: String, required: true, minlength: 6, select: false },
+    password: { type: String, required: true, minlength: 12, maxlength: 128, select: false },
     role: { type: String, enum: ['admin', 'designer', 'customer'], default: 'customer' },
     avatar: { type: String },
     phone: { type: String, trim: true },
     failedLoginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
     otpCode: { type: String, default: null, select: false },
-    otpExpires: { type: Date, default: null, select: false }
+    otpExpires: { type: Date, default: null, select: false },
+    otpAttempts: { type: Number, default: 0, select: false, min: 0, max: 5 }
   },
   baseSchemaOptions
 );

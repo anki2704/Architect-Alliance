@@ -45,7 +45,8 @@ import {
   Star,
   MapPin,
   Download,
-  X
+  X,
+  CheckCircle2
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -126,7 +127,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         bookingsApi.list(),
         projectsApi.list(),
         teamApi.list(),
-        testimonialsApi.list(),
+        testimonialsApi.adminList(),
         journalApi.list()
       ];
       if (role === 'admin') {
@@ -183,42 +184,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  // CSV export (Excel opens .csv natively). Avoids depending on the
+  // unmaintained/vulnerable `xlsx` package — this needs no external
+  // dependency and cannot be affected by its prototype-pollution/ReDoS
+  // advisories (GHSA-4r6h-8v6p-xvw6, GHSA-5pgg-2g8v-p4x9).
+  const toCsvCell = (value: unknown): string => {
+    const str = String(value ?? '');
+    // Quote any cell containing a comma, quote, or newline; escape quotes by doubling them.
+    if (/[",\n\r]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   const handleExportEnquiries = () => {
     if (messages.length === 0) return;
-
-    // Export enquiries as CSV using the browser's native Blob/URL APIs.
-    // This removes the vulnerable xlsx dependency while keeping the export
-    // compatible with Microsoft Excel, Google Sheets, and LibreOffice.
     const headers = ['Name', 'Email', 'Contact', 'Subject', 'Message', 'Date'];
+    const rows = messages.map((m) => [
+      m.name,
+      m.email,
+      m.contact || '',
+      m.subject || '',
+      m.message,
+      new Date(m.createdAt).toLocaleString()
+    ]);
+    // Prefix with a UTF-8 BOM so Excel renders non-ASCII characters correctly.
+    const csv =
+      '\uFEFF' +
+      [headers, ...rows].map((row) => row.map(toCsvCell).join(',')).join('\r\n');
 
-    const escapeCsv = (value: string) => {
-      const normalized = String(value ?? '').replace(/\r?\n|\r/g, '\n');
-      return `"${normalized.replace(/"/g, '""')}"`;
-    };
-
-    const rows = messages.map((m) =>
-      [
-        m.name,
-        m.email,
-        m.contact || '',
-        m.subject || '',
-        m.message,
-        new Date(m.createdAt).toLocaleString()
-      ]
-        .map(escapeCsv)
-        .join(',')
-    );
-
-    const csv = '\uFEFF' + [headers.map(escapeCsv).join(','), ...rows].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-
+    const stamp = new Date().toISOString().slice(0, 10);
     link.href = url;
-    link.download = `enquiries-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `enquiries-${stamp}.csv`;
     document.body.appendChild(link);
     link.click();
-    link.remove();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
@@ -229,8 +232,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       setDesignerFormError('Name, email, and password are required.');
       return;
     }
-    if (newDesignerPassword.length < 6) {
-      setDesignerFormError('Password must be at least 6 characters.');
+    if (newDesignerPassword.length < 12) {
+      setDesignerFormError('Password must be at least 12 characters and include upper/lowercase, a number, and a special character.');
       return;
     }
     setIsSavingDesigner(true);
@@ -851,7 +854,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--bg-card)]/90 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      Export to Excel
+                      Export CSV
                     </button>
                   </div>
                   <div className="rounded-2xl border border-[var(--text-primary)]/10 overflow-x-auto">
@@ -1222,6 +1225,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             ))}
                           </div>
                           <p className="text-sm text-slate-200 leading-relaxed">“{t.quote}”</p>
+                          <div className="flex items-center justify-between gap-3 pt-1">
+                            <span className={`text-[10px] font-mono uppercase tracking-wider ${t.approved !== false ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {t.approved !== false ? 'Approved' : 'Pending approval'}
+                            </span>
+                            {t.approved === false && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    const updated = await testimonialsApi.update(t.id, { approved: true });
+                                    setTestimonials((prev) => prev.map((item) => item.id === updated.id ? updated : item));
+                                  } catch (err) {
+                                    console.error('Failed to approve testimonial', err);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-500 hover:bg-emerald-500/20 transition-colors"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                              </button>
+                            )}
+                          </div>
                           <div className="flex items-center gap-3 pt-1">
                             {t.avatar && (
                               <img

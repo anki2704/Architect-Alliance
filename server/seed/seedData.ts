@@ -45,27 +45,29 @@ export const JOURNAL_POSTS = [
   }
 ];
 
-// Seed account credentials — read from environment variables so a real
-// deployment can set its own admin/designer/customer logins instead of
-// shipping a known password. Falls back to local-dev-only defaults if unset
-// (seed.ts prints a warning whenever a fallback is used).
-const FALLBACK_PASSWORD = 'demo1234';
+// Seed account credentials are mandatory. Never ship or use a known default
+// password for an administrator account. The seed command will fail fast when
+// any required credential is missing.
+function requiredEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`[Seed] Missing required environment variable: ${name}`);
+  }
+  return value;
+}
 
 export const SEED_CREDENTIALS = {
   admin: {
-    email: process.env.SEED_ADMIN_EMAIL || 'admin@architech.com',
-    password: process.env.SEED_ADMIN_PASSWORD || FALLBACK_PASSWORD,
-    usedFallback: !process.env.SEED_ADMIN_PASSWORD
+    email: requiredEnv('SEED_ADMIN_EMAIL'),
+    password: requiredEnv('SEED_ADMIN_PASSWORD')
   },
   designer: {
-    email: process.env.SEED_DESIGNER_EMAIL || 'designer@architech.com',
-    password: process.env.SEED_DESIGNER_PASSWORD || FALLBACK_PASSWORD,
-    usedFallback: !process.env.SEED_DESIGNER_PASSWORD
+    email: requiredEnv('SEED_DESIGNER_EMAIL'),
+    password: requiredEnv('SEED_DESIGNER_PASSWORD')
   },
   customer: {
-    email: process.env.SEED_CUSTOMER_EMAIL || 'customer@architech.com',
-    password: process.env.SEED_CUSTOMER_PASSWORD || FALLBACK_PASSWORD,
-    usedFallback: !process.env.SEED_CUSTOMER_PASSWORD
+    email: requiredEnv('SEED_CUSTOMER_EMAIL'),
+    password: requiredEnv('SEED_CUSTOMER_PASSWORD')
   }
 };
 

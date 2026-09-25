@@ -5,5 +5,5 @@ export function generateToken(userId: string): string {
   if (!secret) {
     throw new Error('JWT_SECRET is not set in the environment.');
   }
-  return jwt.sign({ id: userId }, secret, { expiresIn: '30d' });
+  return jwt.sign({ id: userId }, secret, { expiresIn: '2h' });
 }

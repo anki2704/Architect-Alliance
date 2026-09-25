@@ -188,6 +188,9 @@ export const teamApi = {
 // ---- Testimonials ----
 export const testimonialsApi = {
   list: () => apiFetch<Testimonial[]>('/testimonials'),
+  adminList: () => apiFetch<Testimonial[]>('/testimonials/admin'),
+  update: (id: string, data: Partial<Testimonial>) =>
+    apiFetch<Testimonial>(`/testimonials/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   create: (data: Partial<Testimonial>) =>
     apiFetch<Testimonial>('/testimonials', { method: 'POST', body: JSON.stringify(data) })
 };

@@ -11,7 +11,7 @@ export function hashToken(token: string): string {
  */
 export async function revokeToken(token: string): Promise<void> {
   const tokenHash = hashToken(token);
-  let expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // fallback 30d
+  let expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); // fallback 2h
 
   try {
     const decoded = jwt.decode(token) as { exp?: number } | null;

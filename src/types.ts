@@ -104,6 +104,8 @@ export interface Testimonial {
   role: string;
   avatar: string;
   rating: number;
+  /** false = pending admin approval; true / undefined = shown publicly */
+  approved?: boolean;
 }
 
 export interface JournalArticle {

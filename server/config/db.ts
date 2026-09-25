@@ -1,24 +1,22 @@
 import mongoose from 'mongoose';
 
-/**
- * Connects to MongoDB using the MONGODB_URI environment variable.
- * Works with a local mongod instance or a MongoDB Atlas connection string.
- */
 export async function connectDB(): Promise<void> {
   const uri = process.env.MONGODB_URI;
 
   if (!uri) {
-    console.error(
-      '\n[MongoDB] MONGODB_URI is not set. Create a .env file (see .env.example) ' +
-      'with a local connection string like "mongodb://127.0.0.1:27017/architech-alliance" ' +
-      'or an Atlas URI.\n'
-    );
+    console.error('[MongoDB] MONGODB_URI is not set.');
     process.exit(1);
   }
 
   try {
     mongoose.set('strictQuery', true);
-    const conn = await mongoose.connect(uri);
+    const conn = await mongoose.connect(uri, {
+      maxPoolSize: 20,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000
+    });
     console.log(`[MongoDB] Connected: ${conn.connection.host}/${conn.connection.name}`);
   } catch (err) {
     console.error('[MongoDB] Connection error:', (err as Error).message);
@@ -27,5 +25,9 @@ export async function connectDB(): Promise<void> {
 
   mongoose.connection.on('disconnected', () => {
     console.warn('[MongoDB] Disconnected');
+  });
+
+  mongoose.connection.on('error', (err) => {
+    console.error('[MongoDB] Runtime error:', err.message);
   });
 }
