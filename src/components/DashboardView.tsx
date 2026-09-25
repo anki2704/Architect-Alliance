@@ -48,7 +48,6 @@ import {
   X,
   CheckCircle2
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 interface DashboardViewProps {
   isOpen: boolean;
@@ -185,29 +184,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  // CSV export (Excel opens .csv natively). Avoids depending on the
+  // unmaintained/vulnerable `xlsx` package — this needs no external
+  // dependency and cannot be affected by its prototype-pollution/ReDoS
+  // advisories (GHSA-4r6h-8v6p-xvw6, GHSA-5pgg-2g8v-p4x9).
+  const toCsvCell = (value: unknown): string => {
+    const str = String(value ?? '');
+    // Quote any cell containing a comma, quote, or newline; escape quotes by doubling them.
+    if (/[",\n\r]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   const handleExportEnquiries = () => {
     if (messages.length === 0) return;
-    const rows = messages.map((m) => ({
-      Name: m.name,
-      Email: m.email,
-      Contact: m.contact || '',
-      Subject: m.subject || '',
-      Message: m.message,
-      Date: new Date(m.createdAt).toLocaleString()
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    worksheet['!cols'] = [
-      { wch: 20 }, // Name
-      { wch: 28 }, // Email
-      { wch: 16 }, // Contact
-      { wch: 22 }, // Subject
-      { wch: 60 }, // Message
-      { wch: 20 } // Date
-    ];
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Enquiries');
+    const headers = ['Name', 'Email', 'Contact', 'Subject', 'Message', 'Date'];
+    const rows = messages.map((m) => [
+      m.name,
+      m.email,
+      m.contact || '',
+      m.subject || '',
+      m.message,
+      new Date(m.createdAt).toLocaleString()
+    ]);
+    // Prefix with a UTF-8 BOM so Excel renders non-ASCII characters correctly.
+    const csv =
+      '\uFEFF' +
+      [headers, ...rows].map((row) => row.map(toCsvCell).join(',')).join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(workbook, `enquiries-${stamp}.xlsx`);
+    link.href = url;
+    link.download = `enquiries-${stamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleAddDesigner = async (e: React.FormEvent) => {
@@ -839,7 +854,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--bg-card)]/90 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      Export to Excel
+                      Export CSV
                     </button>
                   </div>
                   <div className="rounded-2xl border border-[var(--text-primary)]/10 overflow-x-auto">
