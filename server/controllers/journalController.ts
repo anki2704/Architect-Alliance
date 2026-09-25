@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { JournalPost } from '../models/JournalPost';
 import { AuthedRequest } from '../middleware/auth';
+import { invalidatePublicCache } from '../middleware/cache';
 
 export async function listJournalPosts(_req: AuthedRequest, res: Response) {
   const posts = await JournalPost.find().sort({ createdAt: -1 });
@@ -16,20 +17,32 @@ export async function getJournalPost(req: AuthedRequest, res: Response) {
 export async function createJournalPost(req: AuthedRequest, res: Response) {
   try {
     const post = await JournalPost.create(req.body);
+    invalidatePublicCache('/api/journal');
     res.status(201).json(post.toJSON());
   } catch (err) {
-    res.status(400).json({ error: 'Could not create article', details: (err as Error).message });
+    console.error('[Journal] create failed', err);
+    res.status(400).json({ error: 'Could not create article' });
   }
 }
 
 export async function updateJournalPost(req: AuthedRequest, res: Response) {
-  const post = await JournalPost.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-  if (!post) return res.status(404).json({ error: 'Article not found' });
-  res.json(post.toJSON());
+  try {
+    const post = await JournalPost.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!post) return res.status(404).json({ error: 'Article not found' });
+    invalidatePublicCache('/api/journal');
+    res.json(post.toJSON());
+  } catch (err) {
+    console.error('[Journal] update failed', err);
+    res.status(400).json({ error: 'Could not update article' });
+  }
 }
 
 export async function deleteJournalPost(req: AuthedRequest, res: Response) {
   const post = await JournalPost.findByIdAndDelete(req.params.id);
   if (!post) return res.status(404).json({ error: 'Article not found' });
+  invalidatePublicCache('/api/journal');
   res.status(204).send();
 }

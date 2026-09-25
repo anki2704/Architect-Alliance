@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { User } from '../models/User';
 import { AuthedRequest } from '../middleware/auth';
+import { validatePasswordStrength } from '../utils/passwordPolicy';
 
 // GET /api/users — admin only. Supports ?role=designer to narrow the list
 // (used by the dashboard to populate the "assign architect" dropdown).
@@ -21,8 +22,10 @@ export async function createDesigner(req: AuthedRequest, res: Response) {
     if (!name?.trim() || !email?.trim() || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required.' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase().trim() });
@@ -39,7 +42,8 @@ export async function createDesigner(req: AuthedRequest, res: Response) {
 
     res.status(201).json(user.toJSON());
   } catch (err) {
-    res.status(500).json({ error: 'Could not create designer account.', details: (err as Error).message });
+    console.error('[Users] createDesigner failed', err);
+    res.status(500).json({ error: 'Could not create designer account.' });
   }
 }
 
@@ -58,6 +62,7 @@ export async function deleteDesigner(req: AuthedRequest, res: Response) {
     await target.deleteOne();
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: 'Could not remove designer account.', details: (err as Error).message });
+    console.error('[Users] deleteDesigner failed', err);
+    res.status(500).json({ error: 'Could not remove designer account.' });
   }
 }
