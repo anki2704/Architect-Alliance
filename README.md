@@ -99,5 +99,60 @@ If `EMAIL_USER` / `EMAIL_PASS` are empty, OTP is printed to the server console (
 | GET | `/api/auth/me` | Requires Bearer token |
 | POST | `/api/auth/logout` | Revokes current JWT server-side |
 
-Forgot password works for **admin**, **designer**, and **customer** — use the account email and the OTP sent 
+Forgot password works for **admin**, **designer**, and **customer** — use the account email and the OTP sent
+
+## Operations checklist (security / performance / reliability)
+
+### Rate limiting
+Public write endpoints are rate-limited:
+- `POST /api/messages` — `enquiryLimiter` (5 / 15 min)
+- `POST /api/bookings` — `bookingLimiter` (5 / 15 min)
+- `POST /api/testimonials` — `testimonialLimiter` (5 / hour)
+- Auth routes use stricter limiters in `authRoutes.ts`
+- Global `apiLimiter` on `/api` (600 / 15 min)
+
+### Password policy
+All password creation paths (register, reset-password, admin `createDesigner`) use the shared 12–128 character policy in `server/utils/passwordPolicy.ts` (upper + lower + digit + special).
+
+### Error responses
+Controllers never send raw `err.message` / stack traces to the client. Details are logged server-side only; clients receive generic messages.
+
+### Compression
+`compression` middleware is enabled so API JSON and static assets are gzip’d.
+
+### API response cache
+Public GET lists (`/api/projects`, `/api/team`, `/api/testimonials`, `/api/journal`) use a short in-memory cache (60s) via `server/middleware/cache.ts`. Authenticated requests bypass the cache.
+
+
+### Tiptap editor
+The project currently uses Tiptap **v2** (`@tiptap/react` ^2.27). A v3 upgrade is optional and involves breaking API changes (extension imports, `useEditor` options). Track upstream release notes before upgrading; the editor in `src/components/RichTextEditor.tsx` should be regression-tested after any major bump.
+
+### Automated tests
+```bash
+npm test
+```
+Currently covers the password policy. Expand with integration tests as needed.
+
+### Error monitoring (Sentry)
+Not wired by default. To add:
+1. `npm install @sentry/node`
+2. Initialize early in `server.ts` with `SENTRY_DSN` from the environment
+3. Capture unhandled errors in the global Express error middleware
+
+### Cold starts on Render free/starter tier
+Spinning-down services cause multi-second cold starts. Fix by pinging the health endpoint every 5–10 minutes from an external uptime monitor (UptimeRobot, Better Stack, Cron-job.org, etc.):
+
+```
+GET https://<your-render-host>/api/health
+```
+
+The endpoint is public, returns `{ status: "ok", timestamp }` and is cheap.
+
+### MongoDB Atlas backup strategy
+Document and enable in the Atlas UI (or Infrastructure-as-Code):
+
+1. **Cloud Provider Snapshots** (M10+): continuous cloud backups with point-in-time recovery. Preferred for production.
+2. **M0 / free tier**: no automated snapshots. Schedule a daily `mongodump` (or Atlas Data Federation export) to S3 / object storage, and test restores quarterly.
+3. Retention: keep at least 7 daily + 4 weekly snapshots for production.
+4. Store connection strings and restore runbooks outside the repo (password manager / ops wiki). Never commit dump files or live credentials.
 

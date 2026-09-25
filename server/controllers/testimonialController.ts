@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { Testimonial } from '../models/Testimonial';
 import { AuthedRequest } from '../middleware/auth';
+import { invalidatePublicCache } from '../middleware/cache';
 
 export async function listTestimonials(_req: AuthedRequest, res: Response) {
   const testimonials = await Testimonial.find({
@@ -69,11 +70,13 @@ export async function updateTestimonial(req: AuthedRequest, res: Response) {
     runValidators: true
   });
   if (!testimonial) return res.status(404).json({ error: 'Testimonial not found' });
+  invalidatePublicCache('/api/testimonials');
   res.json(testimonial.toJSON());
 }
 
 export async function deleteTestimonial(req: AuthedRequest, res: Response) {
   const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
   if (!testimonial) return res.status(404).json({ error: 'Testimonial not found' });
+  invalidatePublicCache('/api/testimonials');
   res.status(204).send();
 }

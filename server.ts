@@ -1,9 +1,11 @@
 import 'dotenv/config';
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import path from 'path';
 import { connectDB } from './server/config/db';
 import { apiLimiter } from './server/middleware/rateLimiters';
+import { publicGetCache } from './server/middleware/cache';
 
 import authRoutes from './server/routes/authRoutes';
 import projectRoutes from './server/routes/projectRoutes';
@@ -45,10 +47,16 @@ async function startServer() {
     .filter(Boolean);
 
   const corsOrigins = new Set([
-    ...allowedOrigins,
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'https://architect-alliance.vercel.app'
+  ...allowedOrigins,
+
+  // Local development
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+
+  // Vercel testing
+  'https://architect-alliance.vercel.app'
   ]);
 
   app.use(
@@ -96,6 +104,9 @@ async function startServer() {
     next();
   });
 
+  // Gzip/Brotli compression for JSON and static assets (reduces TTFB on slow links).
+  app.use(compression());
+
   // Protect the whole API against burst traffic. Sensitive/public write routes
   // have stricter route-specific limits below.
   app.use('/api', apiLimiter);
@@ -116,12 +127,13 @@ async function startServer() {
   });
 
   app.use('/api/auth', authRoutes);
-  app.use('/api/projects', projectRoutes);
+  // Public read endpoints: short in-memory cache (1 min) to avoid hitting Mongo on every page load.
+  app.use('/api/projects', publicGetCache(60_000), projectRoutes);
   app.use('/api/bookings', bookingRoutes);
   app.use('/api/messages', EnquiryRoutes);
-  app.use('/api/team', teamRoutes);
-  app.use('/api/testimonials', testimonialRoutes);
-  app.use('/api/journal', journalRoutes);
+  app.use('/api/team', publicGetCache(60_000), teamRoutes);
+  app.use('/api/testimonials', publicGetCache(60_000), testimonialRoutes);
+  app.use('/api/journal', publicGetCache(60_000), journalRoutes);
   app.use('/api/users', userRoutes);
 
   // API 404s must return JSON instead of falling through to the SPA index.
