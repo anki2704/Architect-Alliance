@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Mail, Phone, Clock, Send, CheckCircle2, X } from 'lucide-react';
+import { MapPin, Mail, Phone, Clock, Send, CheckCircle2, X, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { messagesApi } from '../services/api';
+import { PrivacyNoticeModal } from './PrivacyNoticeModal';
 
 interface EnquirySectionProps {
   isOpen?: boolean;
@@ -14,7 +15,9 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
   const [contact, setContact] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
+  const [privacyError, setPrivacyError] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
 
@@ -31,6 +34,12 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) return;
+
+    if (!privacyAccepted) {
+      setPrivacyError(true);
+      return;
+    }
+    setPrivacyError(false);
 
     setIsSending(true);
 
@@ -49,14 +58,25 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
       setContact('');
       setSubject('');
       setMessage('');
+      setPrivacyAccepted(false);
 
       setTimeout(() => setIsSent(false), 5000);
-    } catch (e) {
-      console.error('Enquiry form error', e);
+    } catch (err) {
+      console.error('Enquiry form error', err);
     } finally {
       setIsSending(false);
     }
   };
+
+  const privacyModal = (
+    <PrivacyNoticeModal
+      isOpen={showPrivacyNotice}
+      onClose={() => setShowPrivacyNotice(false)}
+      onOpenFullPolicy={() => {
+        window.open('/privacy', '_blank', 'noopener,noreferrer');
+      }}
+    />
+  );
 
   const content = (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -125,21 +145,20 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
                 <span className="pl-4 pr-2 py-3 text-sm text-[var(--text-primary)] select-none shrink-0">
                   +91
                 </span>
-              <input
-                type="tel"
-                required
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="XXXXX XXXXX"
-                value={contact}
-                onChange={(e) => {
-                  // sirf digits, +, space, dash allow
-                  if (e.target.value.length > 10) return;
-                  const value = e.target.value.replace(/[^0-9+\-\s]/g, '');
-                  setContact(value);
-                }}
-                className="flex-1 min-w-0 pr-4 py-3 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none border-0"
-              />
+                <input
+                  type="tel"
+                  required
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="XXXXX XXXXX"
+                  value={contact}
+                  onChange={(e) => {
+                    if (e.target.value.length > 10) return;
+                    const value = e.target.value.replace(/[^0-9+\-\s]/g, '');
+                    setContact(value);
+                  }}
+                  className="flex-1 min-w-0 pr-4 py-3 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none border-0"
+                />
               </div>
             </div>
 
@@ -177,9 +196,55 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
               </div>
             )}
 
+            {/* Privacy consent */}
+            <div className="space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={privacyAccepted}
+                  onChange={(e) => {
+                    setPrivacyAccepted(e.target.checked);
+                    if (e.target.checked) setPrivacyError(false);
+                  }}
+                  className="mt-1 w-4 h-4 rounded border-[var(--text-primary)]/30 text-[var(--accent-warm)] focus:ring-[var(--accent-warm)] cursor-pointer"
+                />
+                <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  I agree that Architecture Alliance may use my name, email, phone and message to respond to this enquiry.
+                  Read{' '}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowPrivacyNotice(true);
+                    }}
+                    className="text-[var(--accent-warm)] font-semibold underline underline-offset-2 hover:opacity-80 cursor-pointer"
+                  >
+                    why we collect this information
+                  </button>
+                  {' '}and our{' '}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--accent-warm)] font-semibold underline underline-offset-2 hover:opacity-80"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </span>
+              </label>
+              {privacyError && (
+                <p className="text-xs text-red-600 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 shrink-0" />
+                  Please accept the privacy notice before sending.
+                </p>
+              )}
+            </div>
+
             <button
               type="submit"
-              disabled={isSending}
+              disabled={isSending || !privacyAccepted}
               data-cursor="SEND"
               className="w-full py-4 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] font-bold text-xs font-mono uppercase tracking-widest hover:bg-[var(--accent-warm)] transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
@@ -244,45 +309,54 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
   // When used as overlay (onClose provided), render as modal
   if (onClose) {
     return (
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-              onClick={onClose}
-              aria-hidden="true"
-            />
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.98 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-x-0 top-[72px] sm:top-[80px] bottom-0 z-[70] overflow-y-auto"
-              data-lenis-prevent
-            >
-              <div className="min-h-full flex items-start justify-center pb-10">
-                <div
-                  className="w-full max-w-5xl mx-3 sm:mx-6 mt-2 mb-8 rounded-3xl bg-[var(--bg-main)] border border-[var(--text-primary)]/10 shadow-2xl overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {content}
+      <>
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+                onClick={onClose}
+                aria-hidden="true"
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="fixed inset-x-0 top-[72px] sm:top-[80px] bottom-0 z-[70] overflow-y-auto"
+                data-lenis-prevent
+              >
+                <div className="min-h-full flex items-start justify-center pb-10">
+                  <div
+                    className="w-full max-w-5xl mx-3 sm:mx-6 mt-2 mb-8 rounded-3xl bg-[var(--bg-main)] border border-[var(--text-primary)]/10 shadow-2xl overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {content}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+        {privacyModal}
+      </>
     );
   }
 
   // Fallback: inline section (if ever used without onClose)
   return (
-    <section id="enquiry" className="py-24 bg-[var(--bg-main)] text-[var(--text-primary)] border-t border-[var(--text-primary)]/10 relative">
-      {content}
-    </section>
+    <>
+      <section
+        id="enquiry"
+        className="py-24 bg-[var(--bg-main)] text-[var(--text-primary)] border-t border-[var(--text-primary)]/10 relative"
+      >
+        {content}
+      </section>
+      {privacyModal}
+    </>
   );
 };
