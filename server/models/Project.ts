@@ -98,5 +98,6 @@ const projectSchema = new Schema<IProject>(
 );
 
 projectSchema.index({ category: 1 });
+projectSchema.index({ createdAt: -1 });
 
 export const Project = model<IProject>('Project', projectSchema);

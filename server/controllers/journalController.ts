@@ -3,8 +3,14 @@ import { JournalPost } from '../models/JournalPost';
 import { AuthedRequest } from '../middleware/auth';
 import { invalidatePublicCache } from '../middleware/cache';
 
-export async function listJournalPosts(_req: AuthedRequest, res: Response) {
-  const posts = await JournalPost.find().sort({ createdAt: -1 });
+// Public list is used for cards/thumbnails only, so the (large) article body is
+// left out. The article page loads its own body via GET /api/journal/:id, and the
+// admin edit screen asks for the full documents with ?full=1.
+export async function listJournalPosts(req: AuthedRequest, res: Response) {
+  const wantsFull = req.query.full === '1';
+  const query = JournalPost.find().sort({ createdAt: -1 });
+  if (!wantsFull) query.select('-content');
+  const posts = await query;
   res.json(posts.map((p) => p.toJSON()));
 }
 

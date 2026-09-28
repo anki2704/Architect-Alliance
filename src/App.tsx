@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Lenis from 'lenis';
 import { Preloader } from './components/Preloader';
@@ -11,17 +11,25 @@ import { ProjectGallery } from './components/ProjectGallery';
 import { IsometricFloorPlanViewer } from './components/IsometricFloorPlanViewer';
 import { TeamSection } from './components/TeamSection';
 import { TestimonialsSection } from './components/TestimonialsSection';
-import { DashboardView } from './components/DashboardView';
 import { EnquirySection } from './components/EnquirySection';
 import { Footer } from './components/Footer';
 import { ProjectDetailView } from './components/ProjectDetailView';
 import { AdminLogin } from './components/AdminLogin';
 import { JournalSection } from './components/JournalSection';
-import { JournalArticlePage } from './components/JournalArticlePage';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { Project, User } from './types';
 import { projectsApi } from './services/api';
+import { readListCache, writeListCache } from './services/listCache';
 import { authApi, getStoredToken, getStoredUser, clearStoredAuth } from './services/api';
+
+// Loaded on demand so the public landing page doesn't download the admin
+// dashboard + rich-text editor (TipTap/ProseMirror) or the article reader up front.
+const DashboardView = lazy(() =>
+  import('./components/DashboardView').then((m) => ({ default: m.DashboardView }))
+);
+const JournalArticlePage = lazy(() =>
+  import('./components/JournalArticlePage').then((m) => ({ default: m.JournalArticlePage }))
+);
 
 /** Full-page project detail — opens at /project/:id */
 function ProjectDetailPage({ projects }: { projects: Project[] }) {
@@ -71,7 +79,7 @@ export default function App() {
 
   const [showPreloader, setShowPreloader] = useState(true);
   const [activeSection, setActiveSection] = useState('home');
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>(() => readListCache<Project[]>('projects') ?? []);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
@@ -165,7 +173,10 @@ export default function App() {
     projectsApi
       .list()
       .then((data) => {
-        if (Array.isArray(data)) setProjects(data);
+        if (Array.isArray(data)) {
+          setProjects(data);
+          writeListCache('projects', data);
+        }
       })
       .catch((err) => console.error('Failed to load projects', err));
   }, []);
@@ -340,6 +351,7 @@ export default function App() {
 
       {/* Main Page Content */}
       <main>
+        <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
           <Route
             path="/"
@@ -411,6 +423,7 @@ export default function App() {
           {/* Privacy Policy page */}
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
+        </Suspense>
       </main>
 
       {/* Footer */}
@@ -418,12 +431,14 @@ export default function App() {
 
       {/* Dashboard Popup */}
       {currentUser && (
-        <DashboardView
-          isOpen={isDashboardOpen}
-          onClose={closeDashboard}
-          currentUser={currentUser}
-          onLogout={handleLogout}
-        />
+        <Suspense fallback={null}>
+          <DashboardView
+            isOpen={isDashboardOpen}
+            onClose={closeDashboard}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+        </Suspense>
       )}
 
       {/* Contact / Enquiry overlay — toggled by "Contact Us" in navbar */}

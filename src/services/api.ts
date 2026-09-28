@@ -7,6 +7,7 @@ import type {
   Testimonial,
   JournalArticle
 } from '../types';
+import { cloudinaryOptimize } from '../utils/imageUrl';
 
 const TOKEN_KEY = 'architech_token';
 const USER_KEY = 'architech_user';
@@ -30,6 +31,14 @@ export function mediaUrl(url?: string | null): string {
     return `${API_BASE}${url}`;
   }
   return url;
+}
+
+/**
+ * Same as mediaUrl(), but for Cloudinary images also asks for auto format/quality
+ * and a max width so cards and thumbnails don't download multi-MB originals.
+ */
+export function optimizedMedia(url: string | null | undefined, width: number): string {
+  return cloudinaryOptimize(mediaUrl(url), width);
 }
 
 export function getStoredToken(): string | null {
@@ -197,7 +206,9 @@ export const testimonialsApi = {
 
 // ---- Journal ----
 export const journalApi = {
-  list: () => apiFetch<JournalArticle[]>('/journal'),
+  // Public list omits the (large) article body. Admin edit screens pass { full: true }.
+  list: (opts?: { full?: boolean }) =>
+    apiFetch<JournalArticle[]>(`/journal${opts?.full ? '?full=1' : ''}`),
   get: (id: string) => apiFetch<JournalArticle>(`/journal/${id}`),
   create: (data: Partial<JournalArticle>) =>
     apiFetch<JournalArticle>('/journal', { method: 'POST', body: JSON.stringify(data) }),

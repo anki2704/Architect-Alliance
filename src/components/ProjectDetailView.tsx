@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Project } from '../types';
-import { mediaUrl } from '../services/api';
+import { mediaUrl, optimizedMedia } from '../services/api';
 import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -38,7 +38,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
       : project.imageUrl
         ? [project.imageUrl]
         : []
-  ).map((u) => mediaUrl(u)).filter(Boolean);
+  ).map((u) => optimizedMedia(u, 2000)).filter(Boolean);
 
   // First image is used only as the hero.
   // It is intentionally excluded from the gallery to avoid showing it twice.

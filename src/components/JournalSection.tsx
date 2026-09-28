@@ -3,16 +3,23 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, BookOpen, Clock } from 'lucide-react';
 import { JournalArticle } from '../types';
-import { journalApi } from '../services/api';
+import { journalApi, optimizedMedia } from '../services/api';
+import { readListCache, writeListCache } from '../services/listCache';
 
 export const JournalSection: React.FC = () => {
   const navigate = useNavigate();
-  const [articles, setArticles] = useState<JournalArticle[]>([]);
+  const [articles, setArticles] = useState<JournalArticle[]>(
+    () => readListCache<JournalArticle[]>('journal') ?? []
+  );
 
   useEffect(() => {
     journalApi
       .list()
-      .then(setArticles)
+      .then((data) => {
+        if (!Array.isArray(data)) return;
+        setArticles(data);
+        writeListCache('journal', data);
+      })
       .catch((err) => console.error('Failed to load journal posts', err));
   }, []);
 
@@ -60,7 +67,9 @@ export const JournalSection: React.FC = () => {
           >
             <div className="relative h-72 sm:h-96 overflow-hidden">
               <img
-                src={featuredArticle.image}
+                src={optimizedMedia(featuredArticle.image, 1200)}
+                loading="lazy"
+                decoding="async"
                 alt={featuredArticle.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
@@ -116,7 +125,9 @@ export const JournalSection: React.FC = () => {
               >
                 <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 border border-[var(--text-primary)]/10">
                   <img
-                    src={art.image}
+                    src={optimizedMedia(art.image, 240)}
+                    loading="lazy"
+                    decoding="async"
                     alt={art.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -161,7 +172,9 @@ export const JournalSection: React.FC = () => {
               >
                 <div className="h-44 overflow-hidden">
                   <img
-                    src={art.image}
+                    src={optimizedMedia(art.image, 600)}
+                    loading="lazy"
+                    decoding="async"
                     alt={art.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

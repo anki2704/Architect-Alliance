@@ -17,7 +17,8 @@ import {
   testimonialsApi,
   journalApi,
   ApiError,
-  mediaUrl
+  mediaUrl,
+  optimizedMedia
 } from '../services/api';
 import { ProjectDetailView } from './ProjectDetailView';
 import { AddJournalModal } from './AddJournalModal';
@@ -128,7 +129,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         projectsApi.list(),
         teamApi.list(),
         testimonialsApi.adminList(),
-        journalApi.list()
+        journalApi.list({ full: true })
       ];
       if (role === 'admin') {
         base.push(messagesApi.list());
@@ -691,7 +692,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         >
                           <div className="relative aspect-[16/10] bg-[var(--bg-card)]">
                             <img
-                              src={mediaUrl(p.imageUrl)}
+                              src={optimizedMedia(p.imageUrl, 240)}
+                              loading="lazy"
+                              decoding="async"
                               alt={p.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
