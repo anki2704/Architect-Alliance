@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, Instagram, Linkedin, Facebook, Twitter, MessageSquare, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowRight, Instagram, Linkedin, Facebook, MessageSquare, Phone, Mail, MapPin } from 'lucide-react';
+import { FaXTwitter } from 'react-icons/fa6';
 import { motion } from 'motion/react';
 
 interface FooterProps {
@@ -144,8 +145,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
                 <Facebook className="w-10 h-10" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Twitter className="w-10 h-10" />
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+              <FaXTwitter className="w-10 h-10" />
               </a>
             </div>
           </div>
