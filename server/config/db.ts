@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 import dns from 'dns';
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+// Forces public DNS so mongodb+srv:// lookups work on networks whose default DNS breaks SRV records.
+// If your host blocks outbound DNS to 8.8.8.8/1.1.1.1 (connection fails with querySrv errors),
+// set DISABLE_DNS_OVERRIDE=1 in the environment to use the host's own resolver instead.
+if (process.env.DISABLE_DNS_OVERRIDE !== '1') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 
 export async function connectDB(): Promise<void> {
   const uri = process.env.MONGODB_URI;

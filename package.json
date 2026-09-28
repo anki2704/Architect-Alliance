@@ -10,7 +10,7 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "seed": "tsx server/seed/seed.ts",
-    "test": "tsx --test server/**/*.test.ts"
+    "test": "tsx --test server/**/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

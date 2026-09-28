@@ -38,4 +38,7 @@ const journalPostSchema = new Schema<IJournalPost>(
   }
 );
 
+// Lists are always sorted newest-first.
+journalPostSchema.index({ createdAt: -1 });
+
 export const JournalPost = model<IJournalPost>('JournalPost', journalPostSchema);

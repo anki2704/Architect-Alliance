@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AddProjectModal } from './AddProjectModal';
-import { projectsApi, mediaUrl } from '../services/api';
+import { projectsApi, mediaUrl, optimizedMedia } from '../services/api';
 
 interface ProjectGalleryProps {
   projects: Project[];
@@ -433,7 +433,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
                         style={{ padding: 15 }}
                       >
                         <img
-                          src={mediaUrl(proj.imageUrl)}
+                          src={optimizedMedia(proj.imageUrl, 1600)}
+                          loading={idx === 0 ? 'eager' : 'lazy'}
+                          decoding="async"
                           alt={proj.title}
                           className="w-full h-full object-contain block bg-black"
                           style={{ borderRadius: 15 }}
@@ -461,7 +463,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-[#111]">
                   <img
-                    src={mediaUrl(proj.imageUrl)}
+                    src={optimizedMedia(proj.imageUrl, 800)}
+                    loading="lazy"
+                    decoding="async"
                     alt={proj.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -632,7 +636,9 @@ function SingleProjectCard({
 
       <div className="relative order-1 md:order-1 overflow-hidden" style={{ padding: 15 }}>
         <img
-          src={mediaUrl(proj.imageUrl)}
+          src={optimizedMedia(proj.imageUrl, 1600)}
+          loading={index === 0 ? 'eager' : 'lazy'}
+          decoding="async"
           alt={proj.title}
           className="w-full h-full object-contain block bg-black"
           style={{ borderRadius: 15 }}
