@@ -18,6 +18,7 @@ import { ProjectDetailView } from './components/ProjectDetailView';
 import { AdminLogin } from './components/AdminLogin';
 import { JournalSection } from './components/JournalSection';
 import { JournalArticlePage } from './components/JournalArticlePage';
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { Project, User } from './types';
 import { projectsApi } from './services/api';
 import { authApi, getStoredToken, getStoredUser, clearStoredAuth } from './services/api';
@@ -389,7 +390,7 @@ export default function App() {
                   onProjectCreated={(newProject) => setProjects((prev) => [newProject, ...prev])}
                   onProjectDeleted={(id) => setProjects((prev) => prev.filter((p) => p.id !== id))}
                 />
-                {/*gallery ke just neeche */}
+                {/* gallery ke just neeche */}
                 <IsometricFloorPlanViewer
                   isAdmin={currentUser?.role === 'admin'}
                   onEnquire={() => setIsEnquiryOpen(true)}
@@ -406,9 +407,12 @@ export default function App() {
               </div>
             }
           />
+
+          {/* Privacy Policy page */}
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
       </main>
-    
+
       {/* Footer */}
       <Footer onNavigate={handleNavigate} />
 

@@ -4,7 +4,12 @@ import cors from 'cors';
 import compression from 'compression';
 import path from 'path';
 import { connectDB } from './server/config/db';
-import { apiLimiter } from './server/middleware/rateLimiters';
+import { connectRedis, isRedisReady } from './server/config/redis';          // ← ADD
+import {
+  apiLimiter,
+  createLimiters,
+  applyRedisLimiters
+} from './server/middleware/rateLimiters';                                  // ← UPDATE
 import { publicGetCache } from './server/middleware/cache';
 
 import authRoutes from './server/routes/authRoutes';
@@ -36,6 +41,13 @@ async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
   validateEnvironment(isProduction);
 
+  // ← ADD: Redis pehle connect karo (graceful — fail hone pe bhi app chalegi)
+  await connectRedis();
+
+  // ← ADD: Redis-aware limiters banao aur export hone wale limiters ko update karo
+  const limiters = createLimiters();
+  applyRedisLimiters(limiters);
+
   // Render/Hostinger sit behind a reverse proxy. Keep this configurable.
   if (process.env.TRUST_PROXY === '1') {
     app.set('trust proxy', 1);
@@ -47,16 +59,12 @@ async function startServer() {
     .filter(Boolean);
 
   const corsOrigins = new Set([
-  ...allowedOrigins,
-
-  // Local development
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-
-  // Vercel testing
-  'https://architect-alliance.vercel.app'
+    ...allowedOrigins,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://architect-alliance.vercel.app'
   ]);
 
   app.use(
@@ -74,7 +82,6 @@ async function startServer() {
     })
   );
 
-  // Baseline security headers without locking the Three.js/Cloudinary CSP yet.
   app.disable('x-powered-by');
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -104,30 +111,26 @@ async function startServer() {
     next();
   });
 
-  // Gzip/Brotli compression for JSON and static assets (reduces TTFB on slow links).
   app.use(compression());
 
-  // Protect the whole API against burst traffic. Sensitive/public write routes
-  // have stricter route-specific limits below.
+  // Ab yeh Redis-aware apiLimiter use karega (agar Redis connected hai)
   app.use('/api', apiLimiter);
 
-  // Uploads are parsed before the normal JSON parser so the larger limit is
-  // scoped only to the authenticated image endpoint.
   app.use('/api/upload', express.json({ limit: '12mb' }), uploadRoutes);
-
-  // Keep normal JSON requests small.
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: false, limit: '100kb' }));
-
-  // Backward-compatible serving for any legacy local uploads. New uploads use Cloudinary.
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
+  // ← UPDATE: Health check me redis status add
   app.get('/api/health', (_req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.status(200).json({
+      status: 'ok',
+      redis: isRedisReady() ? 'connected' : 'unavailable',
+      timestamp: new Date().toISOString()
+    });
   });
 
   app.use('/api/auth', authRoutes);
-  // Public read endpoints: short in-memory cache (1 min) to avoid hitting Mongo on every page load.
   app.use('/api/projects', publicGetCache(60_000), projectRoutes);
   app.use('/api/bookings', bookingRoutes);
   app.use('/api/messages', EnquiryRoutes);
@@ -136,7 +139,6 @@ async function startServer() {
   app.use('/api/journal', publicGetCache(60_000), journalRoutes);
   app.use('/api/users', userRoutes);
 
-  // API 404s must return JSON instead of falling through to the SPA index.
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'API route not found.' });
   });
@@ -164,8 +166,6 @@ async function startServer() {
     });
   }
 
-  // Express 4 does not automatically catch rejected async handlers. Route
-  // handlers are wrapped with asyncHandler, while this catches everything else.
   app.use((_req, res) => {
     res.status(404).json({ error: 'Route not found.' });
   });
