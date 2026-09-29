@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import { listJournalPosts, getJournalPost, createJournalPost, updateJournalPost, deleteJournalPost } from '../controllers/journalController';
 import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = safeRouter();
 
 router.get('/', listJournalPosts);
 router.get('/:id', getJournalPost);

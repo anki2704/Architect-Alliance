@@ -5,7 +5,7 @@ interface PreloaderProps {
   onComplete: () => void;
 }
 
-const LOGO_SRC = '/images/brand/preloader.png';
+const LOGO_SRC = '/images/brand/preloader.webp';
 
 // Lighter grid/slat counts on small screens — the 4x4 grid (16 individually
 // spring-animated, background-image-sliced tiles) plus 12 box-shadowed

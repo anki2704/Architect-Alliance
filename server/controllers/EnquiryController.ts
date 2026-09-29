@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { EnquiryMessage } from '../models/EnquiryMessage';
 import { AuthedRequest } from '../middleware/auth';
 import { cleanString, isValidEmail, isValidPhone } from '../utils/validation';
+import { notifyAdmin } from '../utils/adminNotify';
 
 export async function listMessages(_req: AuthedRequest, res: Response) {
   const messages = await EnquiryMessage.find().sort({ createdAt: -1 }).limit(200);
@@ -27,6 +28,14 @@ export async function createMessage(req: AuthedRequest, res: Response) {
     }
 
     const created = await EnquiryMessage.create({ name, email, contact, subject: subject || undefined, message });
+
+    // Fire-and-forget — a failed/unconfigured notification must never affect this response.
+    notifyAdmin(
+      `New enquiry: ${subject || 'General enquiry'}`,
+      `From: ${name} <${email}>\nContact: ${contact}\n\n${message}`,
+      `<p><strong>${name}</strong> (${email}, ${contact}) sent an enquiry:</p><p>${message.replace(/\n/g, '<br/>')}</p>`
+    ).catch(() => {});
+
     res.status(201).json(created.toJSON());
   } catch (err) {
     console.error('[Enquiry] Create failed', err);

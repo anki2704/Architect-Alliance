@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import { listProjects, getProject, createProject, updateProject, deleteProject } from '../controllers/projectController';
 import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = safeRouter();
 
 router.get('/', listProjects);
 router.get('/:id', getProject);

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { Booking } from '../models/Booking';
 import { AuthedRequest } from '../middleware/auth';
 import { isValidEmail, isValidPhone, cleanString } from '../utils/validation';
+import { notifyAdmin } from '../utils/adminNotify';
 
 // GET /api/bookings — role-aware: admins see everything, designers see only
 // bookings assigned to them, customers see only their own bookings.
@@ -61,6 +62,14 @@ export async function createBooking(req: AuthedRequest, res: Response) {
       paymentAmount: 0,
       paymentStatus: 'Not Required'
     });
+
+    // Fire-and-forget — a failed/unconfigured notification must never affect this response.
+    notifyAdmin(
+      `New booking request: ${projectType}`,
+      `From: ${customerName} <${email}>\nDate/time: ${date} ${time}\n\n${notes || '(no notes)'}`,
+      `<p><strong>${customerName}</strong> (${email}) requested <strong>${projectType}</strong> for ${date} ${time}.</p>${notes ? `<p>${notes.replace(/\n/g, '<br/>')}</p>` : ''}`
+    ).catch(() => {});
+
     res.status(201).json(booking.toJSON());
   } catch (err) {
     console.error('[Booking] Create failed', err);

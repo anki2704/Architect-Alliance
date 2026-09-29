@@ -10,6 +10,8 @@ import { JournalPost } from '../models/JournalPost';
 import { INITIAL_PROJECTS, TEAM_MEMBERS, TESTIMONIALS } from '../../src/data/mockData';
 import { JOURNAL_POSTS, DEMO_USERS, SEED_CREDENTIALS } from './seedData';
 import mongoose from 'mongoose';
+import { createInterface } from 'node:readline/promises';
+import { evaluateSeedGuard } from '../utils/seedGuard';
 
 // Strip the old mock `id` field — MongoDB will assign its own `_id`.
 function stripId<T extends { id?: string }>(item: T) {
@@ -20,27 +22,35 @@ function stripId<T extends { id?: string }>(item: T) {
 async function seed() {
   await connectDB();
 
-  // Safety net: this script WIPES every collection below before reinserting
-  // demo content. Once real projects / real user accounts exist, running
-  // `npm run seed` again by mistake would delete all of it. Refuse to run
-  // destructively unless the caller explicitly confirms.
+  // Safety net: this script WIPES every collection below before reinserting demo content.
+  // See server/utils/seedGuard.ts for the exact rules.
   const [projectCount, userCount] = await Promise.all([
     Project.countDocuments(),
     User.countDocuments()
   ]);
   const hasExistingData = projectCount > 0 || userCount > 0;
-  const confirmed = process.argv.includes('--force') || process.env.CONFIRM_RESEED === 'yes';
+  const forced = process.argv.includes('--force') || process.env.CONFIRM_RESEED === 'yes';
+  const dbName = mongoose.connection.name;
 
-  if (hasExistingData && !confirmed) {
-    console.error(
-      '\n[Seed] Refusing to run: this database already has data ' +
-      `(${projectCount} project(s), ${userCount} user(s)).\n` +
-      '  Running this script would DELETE all projects, users, bookings, enquiries,\n' +
-      '  team members, testimonials, and journal posts, then replace them with demo data.\n\n' +
-      '  If you really want to wipe the database and reset it to demo content, run:\n' +
-      '    npm run seed -- --force\n' +
-      '  (or set CONFIRM_RESEED=yes)\n'
+  let typedName = process.env.SEED_CONFIRM_DB;
+  if (hasExistingData && forced && !typedName && process.stdin.isTTY) {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    typedName = await rl.question(
+      `\nThis will DELETE everything in database "${dbName}" (${projectCount} project(s), ${userCount} user(s)).\nType the database name to confirm: `
     );
+    rl.close();
+  }
+
+  const guard = evaluateSeedGuard({
+    nodeEnv: process.env.NODE_ENV,
+    allowProduction: process.env.ALLOW_PRODUCTION_SEED === 'yes',
+    hasExistingData,
+    forced,
+    dbName,
+    typedName
+  });
+  if (!guard.ok) {
+    console.error(`\n[Seed] Refusing to run: ${guard.reason}\n`);
     await mongoose.disconnect();
     process.exit(1);
   }

@@ -3,10 +3,10 @@ import { motion, useReducedMotion } from 'motion/react';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-// Unsplash (loads for sure). Local: '/images/hero/image2.png'
+// Unsplash (loads for sure). Local: '/images/hero/image2.webp'
 const HERO_IMAGE =
-  '/images/team/about_section.png';
-const HERO_FALLBACK = '/images/team/about_section.png';
+  '/images/team/about_section.webp';
+const HERO_FALLBACK = '/images/team/about_section.webp';
 
 const APPROACH_POINTS = [
   'Understanding the context and character of each place.',

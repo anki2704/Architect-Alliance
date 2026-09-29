@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import { listUsers, createDesigner, deleteDesigner } from '../controllers/userController';
 import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = safeRouter();
 
 router.get('/', protect, authorize('admin'), listUsers);
 router.post('/', protect, authorize('admin'), createDesigner);

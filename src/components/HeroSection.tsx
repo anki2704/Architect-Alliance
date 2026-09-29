@@ -21,13 +21,13 @@ const HERO_IMAGES = [
     tag: 'Architecture / Residential',
   },
   {
-    url: '/images/hero/image2.png',
+    url: '/images/hero/image2.webp',
     title: 'Form & Texture',
     location: 'Architecture Alliance',
     tag: 'Interior / Contemporary',
   },
   {
-    url: '/images/hero/image3.png',
+    url: '/images/hero/image3.webp',
     title: 'Designed to Feel',
     location: 'Architecture Alliance',
     tag: 'Hospitality / Design',

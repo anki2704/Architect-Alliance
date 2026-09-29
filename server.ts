@@ -2,6 +2,9 @@ import 'dotenv/config';
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import compression from 'compression';
+import { mapError } from './server/utils/httpErrors';
+import { isOriginAllowed } from './server/utils/originPolicy';
+import { staticCacheControl } from './server/utils/staticCache';
 import path from 'path';
 import { connectDB } from './server/config/db';
 import { connectRedis, isRedisReady } from './server/config/redis';          // ← ADD
@@ -67,18 +70,21 @@ async function startServer() {
     'https://architect-alliance.vercel.app'
   ]);
 
+  // Allows: no Origin header, the site's own origin (frontend + API on one domain),
+  // FRONTEND_URL and the local dev origins. Anything else gets a clean 403.
   app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin || corsOrigins.has(origin)) {
-          callback(null, true);
-          return;
+    cors((req, callback) => {
+      const origin = req.headers.origin;
+      const allowed = isOriginAllowed(origin, req.headers.host, corsOrigins);
+      callback(
+        allowed ? null : Object.assign(new Error('Origin is not allowed by CORS.'), { status: 403 }),
+        {
+          origin: allowed,
+          methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+          allowedHeaders: ['Content-Type', 'Authorization'],
+          credentials: false
         }
-        callback(new Error('Origin is not allowed by CORS.'));
-      },
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: false
+      );
     })
   );
 
@@ -119,7 +125,7 @@ async function startServer() {
   app.use('/api/upload', express.json({ limit: '12mb' }), uploadRoutes);
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: false, limit: '100kb' }));
-  app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads'), { maxAge: '7d' }));
 
   // ← UPDATE: Health check me redis status add
   app.get('/api/health', (_req, res) => {
@@ -156,9 +162,8 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(
       express.static(distPath, {
-        maxAge: '1y',
-        immutable: true,
-        index: false
+        index: false,
+        setHeaders: (res, filePath) => res.setHeader('Cache-Control', staticCacheControl(filePath))
       })
     );
     app.get('*', (_req, res) => {
@@ -171,17 +176,27 @@ async function startServer() {
   });
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error('[HTTP]', err);
+    const { status, message } = mapError(err, isProduction);
+    // Only real server faults are logged loudly; bad ids / bad JSON are just client mistakes.
+    if (status >= 500) console.error('[HTTP]', err);
     if (res.headersSent) return;
-    res.status(500).json({
-      error: isProduction ? 'Internal server error.' : err.message || 'Internal server error.'
-    });
+    res.status(status).json({ error: message });
   });
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
+
+// Safety nets: log stray promise rejections instead of dying silently; for a truly
+// uncaught exception exit so the process manager (pm2 / Hostinger) restarts a clean process.
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process] Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Uncaught exception:', err);
+  process.exit(1);
+});
 
 startServer().catch((err) => {
   console.error('[Startup] Server failed to start:', err);
