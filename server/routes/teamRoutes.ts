@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import { listTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember } from '../controllers/teamController';
 import { protect, authorize } from '../middleware/auth';
 
-const router = Router();
+const router = safeRouter();
 
 router.get('/', listTeamMembers);
 router.post('/', protect, authorize('admin'), createTeamMember);

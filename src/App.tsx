@@ -17,6 +17,7 @@ import { ProjectDetailView } from './components/ProjectDetailView';
 import { AdminLogin } from './components/AdminLogin';
 import { JournalSection } from './components/JournalSection';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
+import { NotFoundPage } from './components/NotFoundPage';
 import { Project, User } from './types';
 import { projectsApi } from './services/api';
 import { readListCache, writeListCache } from './services/listCache';
@@ -422,6 +423,9 @@ export default function App() {
 
           {/* Privacy Policy page */}
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+
+          {/* Catch-all: any unknown URL shows a proper 404 instead of a blank page */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         </Suspense>
       </main>

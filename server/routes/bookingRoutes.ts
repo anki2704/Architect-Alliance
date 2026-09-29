@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import { listBookings, createBooking, updateBooking } from '../controllers/bookingController';
 import { protect, authorize, optionalAuth } from '../middleware/auth';
 import { bookingLimiter } from '../middleware/rateLimiters';
 
-const router = Router();
+const router = safeRouter();
 
 router.get('/', protect, listBookings);
 router.post('/', bookingLimiter, optionalAuth, createBooking);

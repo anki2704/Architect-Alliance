@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import {
   listTestimonials,
   listAdminTestimonials,
@@ -9,7 +9,7 @@ import {
 import { protect, authorize } from '../middleware/auth';
 import { testimonialLimiter } from '../middleware/rateLimiters';
 
-const router = Router();
+const router = safeRouter();
 
 router.get('/', listTestimonials);
 // Admin list includes pending (unapproved) testimonials

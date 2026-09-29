@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { safeRouter } from '../utils/safeRouter';
 import {
   register,
   login,
@@ -12,7 +12,7 @@ import {
 import { protect } from '../middleware/auth';
 import { authLimiter, otpLimiter } from '../middleware/rateLimiters';
 
-const router = Router();
+const router = safeRouter();
 
 router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
