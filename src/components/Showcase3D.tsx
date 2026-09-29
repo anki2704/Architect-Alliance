@@ -23,7 +23,7 @@ export const Showcase3D: React.FC = () => {
           Technical Stack & Interoperability
         </span>
 
-        <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)] mb-4">
+        <h2 className="font-serif-display text-h2 font-medium text-[var(--text-primary)] mb-4">
           Plays Nice With Everything
         </h2>
 

@@ -37,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="font-serif-display text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--text-primary)] leading-tight"
+              className="font-serif-display text-h2 font-medium tracking-tight text-[var(--text-primary)] leading-tight"
             >
               Your dream home awaits.
             </motion.h2>
@@ -102,7 +102,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </span>
               </div>*/}
             </div>
-            <h4 className="font-serif-display text-xl font-bold text-[var(--text-primary)] mb-5">Contact Information</h4>
+            <h4 className="font-serif-display text-xl font-medium text-[var(--text-primary)] mb-5">Contact Information</h4>
             <ul className="space-y-4 text-sm text-[var(--text-secondary)]">
               <li>
                 <a
@@ -153,7 +153,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Quick Links */}
           {/*<div>
-            <h4 className="font-serif-display text-base font-bold text-[var(--text-primary)] mb-4">Quick Links</h4>
+            <h4 className="font-serif-display text-base font-medium text-[var(--text-primary)] mb-4">Quick Links</h4>
             <ul className="space-y-2 text-xs text-[var(--text-secondary)]">
               {['home', 'about', 'services', 'projects', 'team', 'testimonials'].map((sec) => (
                 <li key={sec}>
@@ -171,7 +171,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Services */}
           {/*<div>
-            <h4 className="font-serif-display text-base font-bold text-[var(--text-primary)] mb-4">Typologies</h4>
+            <h4 className="font-serif-display text-base font-medium text-[var(--text-primary)] mb-4">Typologies</h4>
             <ul className="space-y-2 text-xs text-[var(--text-secondary)]">
               <li>Residential</li>
               <li>Interior</li>

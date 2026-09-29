@@ -63,7 +63,7 @@ const FounderNote: React.FC<FounderNoteProps> = ({
           <div className="w-full lg:flex-1 flex flex-col justify-center lg:-translate-y-[40px]">
             <motion.h2
               {...fade(0.05)}
-              className="text-3xl sm:text-4xl lg:text-[3.75rem] xl:text-6xl font-semibold tracking-tight leading-[1.1] text-black mb-6 sm:mb-8 lg:mb-10"
+              className="text-3xl sm:text-4xl lg:text-[3.75rem] xl:text-6xl font-medium tracking-tight leading-[1.1] text-black mb-6 sm:mb-8 lg:mb-10"
             >
               {title.split(' ').slice(0, 2).join(' ')}
               <br />
@@ -91,7 +91,7 @@ const FounderNote: React.FC<FounderNoteProps> = ({
 
             <motion.p
               {...fade(0.2)}
-              className="text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-black"
+              className="text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-medium tracking-tight text-black"
             >
               {name}
             </motion.p>
@@ -168,7 +168,7 @@ export const TeamSection: React.FC = () => {
 
               <motion.h2
                 {...fadeUp(0.05)}
-                className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-white leading-[1.05]"
+                className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.05]"
               >
                 Our core team
               </motion.h2>

@@ -194,11 +194,11 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
         {/* Title */}
         <div className="text-center max-w-3xl mx-auto mb-10">
           <h2
-            className="font-extrabold tracking-tight text-black mb-3 translate-y-[-80px]"
+            className="font-serif-display font-medium tracking-tight text-black mb-3 translate-y-[-80px]"
             style={{
-              fontSize: 'clamp(40px, 12vw, 80px)',
-              letterSpacing: '-0.03em',
-              lineHeight: 0.88,
+              fontSize: 'clamp(36px, 8vw, 48px)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.1,
             }}
           >
             PROJECTS

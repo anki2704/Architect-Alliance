@@ -86,7 +86,7 @@ export const EnquirySection: React.FC<EnquirySectionProps> = ({ isOpen = true, o
           <span className="inline-block text-xs font-semibold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-2">
             Get In Touch
           </span>
-          <h2 className="font-serif-display text-2xl sm:text-4xl font-extrabold text-[var(--text-primary)] mb-2">
+          <h2 className="font-serif-display text-h2 font-medium text-[var(--text-primary)] mb-2">
             Let&apos;s Build Something Iconic
           </h2>
           <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">

@@ -44,7 +44,7 @@ export const PrivacyNoticeModal: React.FC<PrivacyNoticeModalProps> = ({
                   </div>
                   <h3
                     id="privacy-notice-title"
-                    className="font-serif-display text-xl font-bold text-[var(--text-primary)]"
+                    className="font-serif-display text-xl font-medium text-[var(--text-primary)]"
                   >
                     Why we collect your information
                   </h3>

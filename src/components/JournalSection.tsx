@@ -43,7 +43,7 @@ export const JournalSection: React.FC = () => {
               <BookOpen className="w-3.5 h-3.5 text-[var(--accent-warm)]" />
               Architectural Journal & Insights
             </span>
-            <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)]">
+            <h2 className="font-serif-display text-h2 font-medium text-[var(--text-primary)]">
               Thought Leadership & Publications
             </h2>
           </div>
@@ -88,7 +88,7 @@ export const JournalSection: React.FC = () => {
                   <span>{featuredArticle.date}</span>
                 </div>
 
-                <h3 className="font-serif-display text-2xl sm:text-3xl font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors mb-3 leading-snug">
+                <h3 className="font-serif-display text-2xl sm:text-3xl font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors mb-3 leading-snug">
                   {featuredArticle.title}
                 </h3>
 
@@ -141,7 +141,7 @@ export const JournalSection: React.FC = () => {
                       <span>{art.readTime}</span>
                     </div>
 
-                    <h4 className="font-serif-display text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors leading-snug line-clamp-2 mb-2">
+                    <h4 className="font-serif-display text-base font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors leading-snug line-clamp-2 mb-2">
                       {art.title}
                     </h4>
                   </div>
@@ -188,7 +188,7 @@ export const JournalSection: React.FC = () => {
                       <span>{art.readTime}</span>
                     </div>
 
-                    <h4 className="font-serif-display text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors leading-snug line-clamp-2 mb-2">
+                    <h4 className="font-serif-display text-base font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors leading-snug line-clamp-2 mb-2">
                       {art.title}
                     </h4>
                   </div>

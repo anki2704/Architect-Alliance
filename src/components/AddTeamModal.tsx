@@ -145,7 +145,7 @@ const PhotoCropper: React.FC<CropperProps> = ({
     >
       <div className="w-full max-w-md bg-[var(--bg-card)] rounded-3xl p-5 sm:p-6 shadow-2xl border border-[var(--text-primary)]/15">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-serif-display text-lg font-bold text-[var(--text-primary)]">{title}</h3>
+          <h3 className="font-serif-display text-lg font-medium text-[var(--text-primary)]">{title}</h3>
           <button
             type="button"
             onClick={onCancel}
@@ -390,7 +390,7 @@ export const AddTeamModal: React.FC<AddTeamModalProps> = ({
             <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-2">
               Admin · Team
             </span>
-            <h2 className="font-serif-display text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-2">
+            <h2 className="font-serif-display text-2xl sm:text-3xl font-medium text-[var(--text-primary)] mb-2">
               {isEditing ? 'Edit Team Member' : 'Add a Team Member'}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">

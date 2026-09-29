@@ -24,7 +24,7 @@ export const InteractiveTextScrubber: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             Interactive Kinetic Motion Scrubber
           </span>
-          <h2 className="font-serif-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
+          <h2 className="font-serif-display text-h2 font-medium text-[var(--text-primary)]">
             Motion Principles & Spatial Flow
           </h2>
           <p className="text-sm text-[var(--text-secondary)] mt-2">
@@ -81,7 +81,7 @@ export const InteractiveTextScrubber: React.FC = () => {
             transition={{ duration: 0.4 }}
             className="relative z-10 max-w-3xl"
           >
-            <p className="font-serif-display text-2xl sm:text-3xl md:text-4xl text-[var(--text-primary)] font-bold leading-snug">
+            <p className="font-serif-display text-2xl sm:text-3xl md:text-4xl text-[var(--text-primary)] font-medium leading-snug">
               "{currentStatement.text}"
             </p>
           </motion.div>

@@ -393,7 +393,7 @@ export const IsometricFloorPlanViewer: React.FC<Model3DShowcaseProps> = ({
               <Building2 className="w-3.5 h-3.5 text-[var(--accent-warm)]" />
               Live 3D Model
             </span>
-            <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-black">
+            <h2 className="font-serif-display text-h2 font-medium text-black">
               Walk Around the Project
             </h2>
             <p className="text-sm text-black mt-2 max-w-xl">
@@ -532,7 +532,7 @@ export const IsometricFloorPlanViewer: React.FC<Model3DShowcaseProps> = ({
                 {project.category}
               </span>
 
-              <h3 className="font-serif-display text-xl font-bold text-[var(--text-primary)] mb-4">{project.title}</h3>
+              <h3 className="font-serif-display text-xl font-medium text-[var(--text-primary)] mb-4">{project.title}</h3>
 
               <div className="space-y-2 mb-5 text-xs font-mono text-[var(--text-secondary)]">
                 <div className="flex items-center gap-2">

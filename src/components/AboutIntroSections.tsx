@@ -232,8 +232,10 @@ export const AboutIntroSections: React.FC = () => {
           >
             01 — OUR PHILOSOPHY
           </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-[7vw] items-end mt-16 lg:mt-8"></div>
           <motion.p
-            {...fade(0.08, 40)}
+            {...fade(0.08, 0)}
             className="text-[clamp(42px,6vw,92px)] font-extrabold leading-[0.9] tracking-[-0.065em] my-6"
           >
             GOOD DESIGN SHOULD BE
