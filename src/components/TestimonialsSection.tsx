@@ -94,7 +94,7 @@ export const TestimonialsSection: React.FC = () => {
           <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-3">
             Client Feedback
           </span>
-          <h2 className="font-serif-display text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)]">
+          <h2 className="font-serif-display text-h2 font-medium text-[var(--text-primary)]">
             What Our Clients Say
           </h2>
         </div>
@@ -126,7 +126,7 @@ export const TestimonialsSection: React.FC = () => {
                         ))}
                       </div>
 
-                      <p className="font-serif-display text-lg sm:text-xl text-[var(--text-primary)] font-bold italic leading-relaxed mb-7">
+                      <p className="font-serif-display text-lg sm:text-xl text-[var(--text-primary)] font-medium italic leading-relaxed mb-7">
                         "{item.quote}"
                       </p>
 
@@ -195,7 +195,7 @@ export const TestimonialsSection: React.FC = () => {
             <div className="glass-card rounded-3xl p-7 sm:p-8 shadow-xl border border-[var(--text-primary)]/10 text-left h-full flex flex-col">
               <div className="flex items-center gap-2 mb-6">
                 <MessageSquarePlus className="w-5 h-5 text-[var(--accent-warm)]" />
-                <h3 className="font-serif-display text-xl font-bold text-[var(--text-primary)]">
+                <h3 className="font-serif-display text-xl font-medium text-[var(--text-primary)]">
                   Share Your Experience
                 </h3>
               </div>
@@ -203,7 +203,7 @@ export const TestimonialsSection: React.FC = () => {
               {isSent ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
                   <CheckCircle2 className="w-12 h-12 text-[var(--accent-warm)]" />
-                  <p className="font-serif-display text-lg font-bold text-[var(--text-primary)]">
+                  <p className="font-serif-display text-lg font-medium text-[var(--text-primary)]">
                     Thank you for your feedback!
                   </p>
                   <p className="text-sm text-[var(--text-secondary)]">Your review has been added.</p>

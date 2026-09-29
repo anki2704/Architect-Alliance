@@ -7,7 +7,7 @@ export const PrivacyPolicyPage: React.FC = () => {
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-2">
           Legal
         </p>
-        <h1 className="font-serif-display text-3xl sm:text-4xl font-extrabold mb-2">
+        <h1 className="font-serif-display text-h2 font-medium mb-2">
           Privacy Policy
         </h1>
         <p className="text-sm text-[var(--text-muted)] mb-10">

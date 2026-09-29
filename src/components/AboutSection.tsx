@@ -66,7 +66,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isOpen, onClose }) =
             <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-2">
               Why Partner With Us
             </span>
-            <h2 className="font-serif-display text-2xl sm:text-4xl font-extrabold text-[var(--text-on-accent)] mb-3">
+            <h2 className="font-serif-display text-h2 font-medium text-[var(--text-on-accent)] mb-3">
               Why choose us for all your real estate & architectural needs.
             </h2>
             <p className="text-sm text-[var(--text-muted)] leading-relaxed">
@@ -96,7 +96,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ isOpen, onClose }) =
                   {item.num}
                 </div>
                 <div>
-                  <h3 className="font-serif-display text-base font-bold text-[var(--text-on-accent)] mb-1">
+                  <h3 className="font-serif-display text-base font-medium text-[var(--text-on-accent)] mb-1">
                     {item.title}
                   </h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">

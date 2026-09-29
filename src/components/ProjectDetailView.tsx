@@ -113,12 +113,11 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
 
           {/* Title */}
           <h1
+            className="font-serif-display text-project-title"
             style={{
               margin: 0,
-              fontSize: 'clamp(48px, 9vw, 140px)',
-              lineHeight: 0.82,
-              letterSpacing: '-0.075em',
-              fontWeight: 700,
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
               color: '#fff',
             }}
           >

@@ -247,7 +247,7 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({
             <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-2">
               Admin · Project Gallery
             </span>
-            <h2 className="font-serif-display text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-2">
+            <h2 className="font-serif-display text-2xl sm:text-3xl font-medium text-[var(--text-primary)] mb-2">
               {isEditing ? 'Edit Project' : 'Add a New Project'}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">

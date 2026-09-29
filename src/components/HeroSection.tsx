@@ -152,7 +152,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, children }
                 transition={{ duration: 0.2, delay: 0.1 }}
                 className="mt-7"
               >
-                {/*<h1 className="font-serif-display text-5xl sm:text-6xl xl:text-8xl font-extrabold tracking-tight leading-[1.02] text-white">
+                {/*<h1 className="font-serif-display text-5xl sm:text-6xl xl:text-8xl font-medium tracking-tight leading-[1.02] text-white">
                   We Design
                   <br />
                   <span className="italic text-[var(--accent-amber)]">That Inspire &amp; Elevate</span>

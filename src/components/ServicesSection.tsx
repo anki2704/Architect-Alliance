@@ -145,12 +145,12 @@ export const ServicesSection: React.FC = () => {
                     {/* Title */}
                     <h2
                       key={`title-${active}-${i}`}
-                      className="font-extrabold"
+                      className="font-serif-display font-medium"
                       style={{
                         margin: '12px 0 10px',
-                        fontSize: 'clamp(40px, 5vw, 76px)',
-                        lineHeight: 0.86,
-                        letterSpacing: '-0.065em',
+                        fontSize: 'clamp(36px, 5vw, 48px)',
+                        lineHeight: 1.1,
+                        letterSpacing: '-0.02em',
                         ...(i === active
                           ? {
                               animation:

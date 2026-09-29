@@ -31,7 +31,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
       return (
         <main className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] flex items-center justify-center px-4 sm:px-6">
           <div className="max-w-md text-center">
-            <h1 className="font-serif-display text-2xl sm:text-3xl font-extrabold mb-4">
+            <h1 className="font-serif-display text-2xl sm:text-3xl font-medium mb-4">
               Something went wrong
             </h1>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-8">

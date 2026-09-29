@@ -20,9 +20,9 @@ import { journalApi } from '../services/api';
 // Article look — also used by RichTextEditor so the editor matches the page.
 export const ARTICLE_BODY_CLASSES = [
   'text-lg leading-relaxed text-[var(--text-secondary)] [&_p]:my-5',
-  '[&_h1]:font-serif-display [&_h1]:text-3xl sm:[&_h1]:text-4xl [&_h1]:font-extrabold [&_h1]:leading-tight [&_h1]:text-[var(--text-primary)] [&_h1]:mt-14 [&_h1]:mb-5',
-  '[&_h2]:font-serif-display [&_h2]:text-3xl sm:[&_h2]:text-4xl [&_h2]:font-extrabold [&_h2]:leading-tight [&_h2]:text-[var(--text-primary)] [&_h2]:mt-14 [&_h2]:mb-5',
-  '[&_h3]:font-serif-display [&_h3]:text-xl sm:[&_h3]:text-2xl [&_h3]:font-bold [&_h3]:leading-snug [&_h3]:text-[var(--text-primary)] [&_h3]:mt-10 [&_h3]:mb-3',
+  '[&_h1]:font-serif-display [&_h1]:text-3xl sm:[&_h1]:text-4xl [&_h1]:font-medium [&_h1]:leading-tight [&_h1]:text-[var(--text-primary)] [&_h1]:mt-14 [&_h1]:mb-5',
+  '[&_h2]:font-serif-display [&_h2]:text-3xl sm:[&_h2]:text-4xl [&_h2]:font-medium [&_h2]:leading-tight [&_h2]:text-[var(--text-primary)] [&_h2]:mt-14 [&_h2]:mb-5',
+  '[&_h3]:text-xl sm:[&_h3]:text-2xl [&_h3]:font-medium [&_h3]:leading-snug [&_h3]:text-[var(--text-primary)] [&_h3]:mt-10 [&_h3]:mb-3',
   '[&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-[var(--text-primary)] [&_h4]:mt-8 [&_h4]:mb-2',
   '[&_strong]:font-bold [&_strong]:text-[var(--text-primary)] [&_em]:italic',
   '[&_a]:text-[var(--accent-warm)] [&_a]:underline [&_a]:underline-offset-4',
@@ -141,7 +141,7 @@ export const JournalArticlePage: React.FC = () => {
             <span>{article.date}</span>
           </div>
 
-          <h1 className="font-serif-display text-3xl sm:text-5xl font-extrabold leading-tight mb-4">
+          <h1 className="font-serif-display text-h2 font-medium leading-tight mb-4">
             {article.title}
           </h1>
 

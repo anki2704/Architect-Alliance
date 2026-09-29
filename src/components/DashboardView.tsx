@@ -557,7 +557,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {activeNav === 'overview' && (
                 <div className="space-y-6">
                   <div>
-                    <h1 className="font-serif-display text-2xl sm:text-3xl font-bold">
+                    <h1 className="font-serif-display text-2xl sm:text-3xl font-medium">
                       Dashboard Overview
                     </h1>
                     <p className="text-sm text-[var(--text-muted)] mt-1">
@@ -649,7 +649,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
-                      <h1 className="font-serif-display text-2xl font-bold">Projects</h1>
+                      <h1 className="font-serif-display text-2xl font-medium">Projects</h1>
                       <p className="text-xs text-[var(--text-muted)] mt-1">
                         Tap a project to open full details · use Edit to change it
                       </p>
@@ -756,7 +756,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* ════ APPOINTMENTS ════ */}
               {activeNav === 'appointments' && (
                 <div className="space-y-4">
-                  <h1 className="font-serif-display text-2xl font-bold">Appointments</h1>
+                  <h1 className="font-serif-display text-2xl font-medium">Appointments</h1>
                   <div className="rounded-2xl border border-[var(--text-primary)]/10 overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
@@ -849,7 +849,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {activeNav === 'enquiries' && role === 'admin' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <h1 className="font-serif-display text-2xl font-bold">Contact Enquiries</h1>
+                    <h1 className="font-serif-display text-2xl font-medium">Contact Enquiries</h1>
                     <button
                       type="button"
                       onClick={handleExportEnquiries}
@@ -922,7 +922,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <h2 className="font-serif-display text-lg font-bold">Enquiry Details</h2>
+                      <h2 className="font-serif-display text-lg font-medium">Enquiry Details</h2>
                       <button
                         type="button"
                         onClick={() => setSelectedMessage(null)}
@@ -971,7 +971,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {activeNav === 'designers' && role === 'admin' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <h1 className="font-serif-display text-2xl font-bold">Designers</h1>
+                    <h1 className="font-serif-display text-2xl font-medium">Designers</h1>
                     <button
                       onClick={() => {
                         setIsAddingDesigner((v) => !v);
@@ -1072,7 +1072,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <h1 className="font-serif-display text-2xl font-bold">Team</h1>
+                      <h1 className="font-serif-display text-2xl font-medium">Team</h1>
                       <p className="text-xs text-[var(--text-muted)]">Public team members shown on the website</p>
                     </div>
                     <button
@@ -1135,7 +1135,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <h1 className="font-serif-display text-2xl font-bold">Journal</h1>
+                      <h1 className="font-serif-display text-2xl font-medium">Journal</h1>
                       <p className="text-xs text-[var(--text-muted)]">Articles from the site journal</p>
                     </div>
                     <button
@@ -1205,7 +1205,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* ════ TESTIMONIALS ════ */}
               {activeNav === 'testimonials' && (
                 <div className="space-y-4">
-                  <h1 className="font-serif-display text-2xl font-bold">Testimonials</h1>
+                  <h1 className="font-serif-display text-2xl font-medium">Testimonials</h1>
                   {testimonials.length === 0 ? (
                     <p className="text-sm text-slate-500 py-8 text-center">No testimonials yet.</p>
                   ) : (
@@ -1273,7 +1273,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {activeNav === 'media' && (
                 <div className="space-y-4">
                   <div>
-                    <h1 className="font-serif-display text-2xl font-bold">Media Library</h1>
+                    <h1 className="font-serif-display text-2xl font-medium">Media Library</h1>
                     <p className="text-xs text-[var(--text-muted)] mt-1">
                       Images used across projects ({mediaItems.length} files)
                     </p>
@@ -1312,7 +1312,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* ════ SETTINGS ════ */}
               {activeNav === 'settings' && (
                 <div className="space-y-4 max-w-lg">
-                  <h1 className="font-serif-display text-2xl font-bold">Settings</h1>
+                  <h1 className="font-serif-display text-2xl font-medium">Settings</h1>
                   <div className="rounded-2xl border border-[var(--text-primary)]/10 bg-[var(--bg-card)]/5 p-5 space-y-4">
                     <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                       Account

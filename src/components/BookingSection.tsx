@@ -111,7 +111,7 @@ export const BookingSection: React.FC<BookingSectionProps> = ({
               <span className="inline-block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[var(--accent-warm)] mb-0.5">
                 Appointment Scheduling
               </span>
-              <h2 className="font-serif-display text-xl sm:text-2xl font-extrabold text-[var(--text-primary)]">
+              <h2 className="font-serif-display text-xl sm:text-2xl font-medium text-[var(--text-primary)]">
                 Book a Design Consultation
               </h2>
             </div>
@@ -303,7 +303,7 @@ export const BookingSection: React.FC<BookingSectionProps> = ({
             <div className="w-14 h-14 rounded-full bg-[var(--accent-warm)]/10 text-[var(--accent-warm)] border border-[var(--accent-warm)]/30 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h2 className="font-serif-display text-2xl font-bold text-[var(--text-primary)] mb-2">
+            <h2 className="font-serif-display text-2xl font-medium text-[var(--text-primary)] mb-2">
               Consultation Confirmed
             </h2>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-5">

@@ -202,7 +202,7 @@ export const AddJournalModal: React.FC<AddJournalModalProps> = ({
             <span className="inline-block text-xs font-mono font-bold uppercase tracking-[0.25em] text-[var(--accent-warm)] mb-2">
               Admin · Journal
             </span>
-            <h2 className="font-serif-display text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] mb-2">
+            <h2 className="font-serif-display text-2xl sm:text-3xl font-medium text-[var(--text-primary)] mb-2">
               {isEditing ? 'Edit Article' : 'Add a New Article'}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
