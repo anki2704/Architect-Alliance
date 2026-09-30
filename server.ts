@@ -7,13 +7,14 @@ import { isOriginAllowed } from './server/utils/originPolicy';
 import { staticCacheControl } from './server/utils/staticCache';
 import path from 'path';
 import { connectDB } from './server/config/db';
-import { connectRedis, isRedisReady } from './server/config/redis';          // ← ADD
+import { connectRedis, isRedisReady } from './server/config/redis';
 import {
   apiLimiter,
   createLimiters,
   applyRedisLimiters
-} from './server/middleware/rateLimiters';                                  // ← UPDATE
-import { publicGetCache } from './server/middleware/cache';
+} from './server/middleware/rateLimiters';
+import { publicGetCache, getCacheStats } from './server/middleware/cache';
+import { requestLogger } from './server/middleware/requestLogger';
 
 import authRoutes from './server/routes/authRoutes';
 import projectRoutes from './server/routes/projectRoutes';
@@ -24,6 +25,8 @@ import testimonialRoutes from './server/routes/testimonialRoutes';
 import journalRoutes from './server/routes/journalRoutes';
 import userRoutes from './server/routes/userRoutes';
 import uploadRoutes from './server/routes/uploadRoutes';
+
+const startedAt = Date.now();
 
 function validateEnvironment(isProduction: boolean) {
   const required = ['MONGODB_URI', 'JWT_SECRET'];
@@ -38,20 +41,30 @@ function validateEnvironment(isProduction: boolean) {
   }
 }
 
+/** Resolve public site origin for SEO files (robots/sitemap). */
+function getPublicOrigin(req: Request): string {
+  const fromEnv = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((o) => o.trim().replace(/\/$/, ''))
+    .filter(Boolean)[0];
+  if (fromEnv) return fromEnv;
+  const proto = req.protocol || 'https';
+  const host = req.get('host') || 'localhost';
+  return `${proto}://${host}`;
+}
+
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
   const isProduction = process.env.NODE_ENV === 'production';
   validateEnvironment(isProduction);
 
-  // ← ADD: Redis pehle connect karo (graceful — fail hone pe bhi app chalegi)
   await connectRedis();
 
-  // ← ADD: Redis-aware limiters banao aur export hone wale limiters ko update karo
   const limiters = createLimiters();
   applyRedisLimiters(limiters);
 
-  // Render/Hostinger sit behind a reverse proxy. Keep this configurable.
+  // Hostinger / Render sit behind a reverse proxy
   if (process.env.TRUST_PROXY === '1') {
     app.set('trust proxy', 1);
   }
@@ -61,17 +74,15 @@ async function startServer() {
     .map((origin) => origin.trim().replace(/\/$/, ''))
     .filter(Boolean);
 
+  // Same-origin + FRONTEND_URL + local dev. No hard-coded Vercel/Render.
   const corsOrigins = new Set([
     ...allowedOrigins,
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'https://architect-alliance.vercel.app'
+    'http://127.0.0.1:5173'
   ]);
 
-  // Allows: no Origin header, the site's own origin (frontend + API on one domain),
-  // FRONTEND_URL and the local dev origins. Anything else gets a clean 403.
   app.use(
     cors((req, callback) => {
       const origin = req.headers.origin;
@@ -96,7 +107,7 @@ async function startServer() {
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     if (isProduction) {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-      const connectSources = ["'self'", 'https://architect-alliance.onrender.com', ...allowedOrigins].join(' ');
+      const connectSources = ["'self'", ...allowedOrigins].join(' ');
       res.setHeader(
         'Content-Security-Policy',
         [
@@ -118,8 +129,8 @@ async function startServer() {
   });
 
   app.use(compression());
+  // app.use(requestLogger(isProduction));
 
-  // Ab yeh Redis-aware apiLimiter use karega (agar Redis connected hai)
   app.use('/api', apiLimiter);
 
   app.use('/api/upload', express.json({ limit: '12mb' }), uploadRoutes);
@@ -127,22 +138,59 @@ async function startServer() {
   app.use(express.urlencoded({ extended: false, limit: '100kb' }));
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads'), { maxAge: '7d' }));
 
-  // ← UPDATE: Health check me redis status add
+  // ---------- Health + lightweight metrics ----------
   app.get('/api/health', (_req, res) => {
+    const mem = process.memoryUsage();
     res.status(200).json({
       status: 'ok',
+      uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
       redis: isRedisReady() ? 'connected' : 'unavailable',
+      cache: getCacheStats(),
+      memory: {
+        rssMb: Math.round(mem.rss / 1024 / 1024),
+        heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024)
+      },
       timestamp: new Date().toISOString()
     });
   });
 
+  // ---------- Dynamic robots.txt + sitemap ----------
+  app.get('/robots.txt', (req, res) => {
+    const origin = getPublicOrigin(req);
+    res.type('text/plain').send(
+      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /dashboard\n\nSitemap: ${origin}/sitemap.xml\n`
+    );
+  });
+
+  app.get('/sitemap.xml', (req, res) => {
+    const origin = getPublicOrigin(req);
+    const urls = [
+      { loc: `${origin}/`, priority: '1.0', changefreq: 'weekly' },
+      { loc: `${origin}/projects`, priority: '0.9', changefreq: 'weekly' },
+      { loc: `${origin}/journal`, priority: '0.8', changefreq: 'weekly' },
+      { loc: `${origin}/team`, priority: '0.6', changefreq: 'monthly' },
+      { loc: `${origin}/privacy`, priority: '0.2', changefreq: 'yearly' }
+    ];
+    const body =
+      `<?xml version="1.0" encoding="UTF-8"?>\n` +
+      `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      urls
+        .map(
+          (u) =>
+            `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`
+        )
+        .join('\n') +
+      `\n</urlset>\n`;
+    res.type('application/xml').send(body);
+  });
+
   app.use('/api/auth', authRoutes);
-  app.use('/api/projects', publicGetCache(60_000), projectRoutes);
+  app.use('/api/projects', publicGetCache(90_000), projectRoutes);
   app.use('/api/bookings', bookingRoutes);
   app.use('/api/messages', EnquiryRoutes);
-  app.use('/api/team', publicGetCache(60_000), teamRoutes);
-  app.use('/api/testimonials', publicGetCache(60_000), testimonialRoutes);
-  app.use('/api/journal', publicGetCache(60_000), journalRoutes);
+  app.use('/api/team', publicGetCache(120_000), teamRoutes);
+  app.use('/api/testimonials', publicGetCache(120_000), testimonialRoutes);
+  app.use('/api/journal', publicGetCache(90_000), journalRoutes);
   app.use('/api/users', userRoutes);
 
   app.use('/api', (_req, res) => {
@@ -177,19 +225,17 @@ async function startServer() {
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     const { status, message } = mapError(err, isProduction);
-    // Only real server faults are logged loudly; bad ids / bad JSON are just client mistakes.
     if (status >= 500) console.error('[HTTP]', err);
     if (res.headersSent) return;
     res.status(status).json({ error: message });
   });
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`[Startup] Server running on port ${PORT} (${isProduction ? 'production' : 'development'})`);
+    console.log(`[Startup] Redis: ${isRedisReady() ? 'connected' : 'unavailable (in-memory fallbacks)'}`);
   });
 }
 
-// Safety nets: log stray promise rejections instead of dying silently; for a truly
-// uncaught exception exit so the process manager (pm2 / Hostinger) restarts a clean process.
 process.on('unhandledRejection', (reason) => {
   console.error('[Process] Unhandled promise rejection:', reason);
 });

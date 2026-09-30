@@ -13,14 +13,14 @@ const TOKEN_KEY = 'architech_token';
 const USER_KEY = 'architech_user';
 
 // ====================== IMPORTANT ======================
-// Production: set VITE_API_URL to your Render API URL (Vercel env).
-// Local: leave blank when frontend+API share same origin.
+// Hostinger / same-origin: leave VITE_API_URL blank (default).
+// Legacy Vercel+Render split: set VITE_API_URL to the API host URL.
 export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 // =======================================================
 
 /**
- * Resolve media paths so /uploads/... always hits the API host (Render),
- * not the Vercel frontend (which returns index.html → black images).
+ * Resolve media paths. When API_BASE is set (split hosting), /uploads
+ * is rewritten to the API host. On same-origin (Hostinger) paths stay relative.
  */
 export function mediaUrl(url?: string | null): string {
   if (!url) return '';

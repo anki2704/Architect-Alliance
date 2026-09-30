@@ -1,4 +1,9 @@
+# Fallback static robots.txt.
+# Production: Express serves dynamic /robots.txt from FRONTEND_URL / host.
+
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
 
 Sitemap: https://YOUR-DOMAIN-HERE.com/sitemap.xml
