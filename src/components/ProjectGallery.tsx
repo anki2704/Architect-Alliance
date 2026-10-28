@@ -522,6 +522,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({
         onClose={() => setIsAddProjectOpen(false)}
         onCreated={(proj) => {
           if (onProjectCreated) onProjectCreated(proj);
+          if (proj.published === false) {
+            alert('Project saved as a draft. Open Dashboard → Projects and press Publish when you want it on the website.');
+          }
         }}
       />
     </section>

@@ -225,7 +225,7 @@ export const AboutIntroSections: React.FC = () => {
 
       {/* ========== 01 PHILOSOPHY ========== */}
       <section className="min-h-[80vh] flex items-center px-[6vw] py-[7vw]">
-        <div className="max-w-[1100px]">
+        <div className="max-w-[1100px] min-w-0">
           <motion.div
             {...fade(0)}
             className="text-[25px] font-bold tracking-[0.2em] uppercase shrink-0 border-b border-[#080808] pb-1"
@@ -236,7 +236,7 @@ export const AboutIntroSections: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-[7vw] items-end mt-16 lg:mt-8"></div>
           <motion.p
             {...fade(0.08, 0)}
-            className="text-[clamp(42px,6vw,92px)] font-extrabold leading-[0.9] tracking-[-0.065em] my-6"
+            className="text-[clamp(32px,10.5vw,42px)] md:text-[clamp(42px,6vw,92px)] font-extrabold leading-[0.9] tracking-[-0.065em] my-6 break-words"
           >
             GOOD DESIGN SHOULD BE
             <br />

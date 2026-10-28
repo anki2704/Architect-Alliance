@@ -45,6 +45,12 @@ export interface IProject extends Document {
   diagrams?: IProjectDiagram[];
   credits?: IProjectCredits;
   coordinates?: { lat: number; lng: number };
+  /**
+   * Visibility on the public website. Projects created before this field existed
+   * have no value and are treated as published (see `published !== false` checks).
+   * New projects start as drafts (false) until someone presses Publish in the dashboard.
+   */
+  published?: boolean;
 }
 
 const projectSchema = new Schema<IProject>(
@@ -92,12 +98,16 @@ const projectSchema = new Schema<IProject>(
     coordinates: {
       lat: Number,
       lng: Number
-    }
+    },
+    // No schema default on purpose: old documents stay "published" (undefined) so the
+    // live site does not suddenly lose projects. New ones are created as drafts by the controller.
+    published: { type: Boolean }
   },
   baseSchemaOptions
 );
 
 projectSchema.index({ category: 1 });
+projectSchema.index({ published: 1, createdAt: -1 });
 projectSchema.index({ createdAt: -1 });
 
 export const Project = model<IProject>('Project', projectSchema);

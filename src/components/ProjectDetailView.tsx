@@ -70,6 +70,16 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
         Close
       </button>
 
+      {/* Draft ribbon — only staff can ever open a draft (the server hides drafts from everyone else) */}
+      {project.published === false && (
+        <div
+          className="fixed top-5 left-5 z-50 px-3.5 py-2 rounded-full bg-amber-400 text-black text-[11px] font-bold tracking-widest uppercase shadow-lg"
+          style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
+        >
+          Draft · not visible on website
+        </div>
+      )}
+
       {/* ─── 01: HERO (details only) ─── */}
       <section
         className="relative w-full overflow-hidden"

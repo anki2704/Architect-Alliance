@@ -57,7 +57,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="pt-2"
+              className="pt-2 flex flex-wrap items-center justify-center gap-3"
             >
               <button
                 onClick={() => onNavigate('enquiry')}
@@ -87,7 +87,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
         
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 pb-7 border-b border-[var(--text-primary)]/10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 pb-7 border-b border-[var(--text-primary)]/10">
           {/* Brand */}
           <div className="space-y-5">
             <div className="flex items-center gap-3">
@@ -109,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   href="tel:+918130535793"
                   className="flex items-start gap-3 font-extrabold hover:text-[var(--accent-warm)] transition-colors"
                 >
-                  <Phone className="w-5 h-5 mt-0.5git shrink-0 text-[var(--accent-warm)]" />
+                  <Phone className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                   <span className="text-base">+91 8130535793</span>
                 </a>
               </li>
@@ -119,15 +119,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="flex items-start gap-3 font-extrabold hover:text-[var(--accent-warm)] transition-colors"
                 >
                   <Mail className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
-                  <span className="text-base">architecturealliance.career@gmail.com</span>
+                  <span className="text-base min-w-0 break-all sm:break-normal">architecturealliance.career@gmail.com</span>
                 </a>
               </li>
               <li className="flex items-start font-extrabold gap-3">
                 <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-[var(--accent-warm)]" />
                 <span className="text-base leading-relaxed">
-                  FIRST FLOOR, KAVERY ROYAL MARKET, Swarna Jayanti Nagar| 
+                  FIRST FLOOR, KAVERY ROYAL MARKET, Swarna Jayanti Nagar
                   <br />
-                  Aligarh, Uttar Pradesh 202001|
+                  Aligarh, Uttar Pradesh 202001
                 </span>
               </li>
             </ul>
@@ -135,18 +135,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               {/*Designing Spaces, Building Dreams — Award-winning sustainable architectural studio crafting modern, biophilic structures.*/}
             </p>
 
-            <div className="flex items-center gap-8 pt-3">
-              <a href="https://www.instagram.com/architecturealliance/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Instagram className="w-10 h-10" />
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-3">
+              <a href="https://www.instagram.com/architecturealliance/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Instagram className="w-7 h-7 sm:w-10 sm:h-10" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Linkedin className="w-10 h-10" />
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Linkedin className="w-7 h-7 sm:w-10 sm:h-10" />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-                <Facebook className="w-10 h-10" />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+                <Facebook className="w-7 h-7 sm:w-10 sm:h-10" />
               </a>
-              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)" className="w-20 h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
-              <FaXTwitter className="w-10 h-10" />
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)" className="w-14 h-14 sm:w-20 sm:h-20 rounded-full glass-pill text-[var(--text-primary)] hover:bg-[var(--accent-warm)] hover:text-[var(--text-on-accent)] flex items-center justify-center transition-all border border-[var(--text-primary)]/15">
+              <FaXTwitter className="w-7 h-7 sm:w-10 sm:h-10" />
               </a>
             </div>
           </div>
@@ -184,7 +184,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Office Map — far right */}
           <div>
-            <div className="rounded-xl overflow-hidden border border-[var(--text-primary)]/15 shadow-sm bg-[var(--bg-card)] h-full min-h-[350px] w-full min-w-[900px]">
+            <div className="rounded-xl overflow-hidden border border-[var(--text-primary)]/15 shadow-sm bg-[var(--bg-card)] w-full h-[320px] sm:h-[380px] lg:h-full lg:min-h-[420px]">
               <iframe
                 title="Architecture Alliance Office Location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3526.287705298419!2d78.0981032793457!3d27.893143100000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3974a5f98da7e919%3A0x2162dd0f6f45045b!2sARCHITECTURE%20ALLIANCE!5e0!3m2!1sen!2sin!4v1786948072703!5m2!1sen!2sin"

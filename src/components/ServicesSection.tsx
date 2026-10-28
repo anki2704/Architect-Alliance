@@ -251,9 +251,9 @@ export const ServicesSection: React.FC = () => {
 
             {/* Fixed right tabs — desktop only */}
             <nav
-              className="hidden md:flex absolute right-0 top-0 bottom-0 z-20"
+              className="hidden lg:flex absolute right-0 top-0 bottom-0 z-20"
               style={{
-                width: 500,
+                width: 'var(--svc-tabs-w)',
                 borderLeft: '1px solid #d5d5d0',
                 background: '#f7f7f5',
               }}
@@ -295,7 +295,7 @@ export const ServicesSection: React.FC = () => {
 
             {/* Mobile bottom tabs */}
             <nav
-              className="md:hidden absolute left-0 right-0 bottom-0 z-20 flex overflow-x-auto"
+              className="lg:hidden absolute left-0 right-0 bottom-0 z-20 flex overflow-x-auto"
               style={{
                 height: 84,
                 borderTop: '1px solid #d5d5d0',
@@ -314,10 +314,10 @@ export const ServicesSection: React.FC = () => {
                     padding: '8px 4px',
                   }}
                 >
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>{svc.num}</span>
+                  <span className="text-[12px] sm:text-[14px]" style={{ fontWeight: 700 }}>{svc.num}</span>
                   <span
+                    className="text-[8px] sm:text-[11px]"
                     style={{
-                      fontSize: 8,
                       fontWeight: 700,
                       textAlign: 'center',
                       lineHeight: 1.15,
@@ -344,20 +344,33 @@ export const ServicesSection: React.FC = () => {
           to   { opacity: 1; transform: translateX(0); }
         }
 
-        /* Desktop: content stays left of the fixed tabs */
-        @media (min-width: 768px) {
+        /* Width of the vertical tab strip: shrinks on smaller laptops instead of a fixed 500px */
+        #services { --svc-tabs-w: clamp(340px, 36vw, 500px); }
+
+        /* Desktop / large tablet landscape (1024px+): content stays left of the side tabs */
+        @media (min-width: 1024px) {
           #services article main {
-            margin-right: 500px !important;
+            margin-right: var(--svc-tabs-w) !important;
           }
         }
 
-        /* Mobile: space for bottom tab bar + tighter content */
-        @media (max-width: 767px) {
+        /* Phones + tablets: tabs move to the bottom bar, so reserve space for it */
+        @media (max-width: 1023px) {
           #services article main {
-            padding-bottom: 100px !important;
+            padding-bottom: 110px !important;
           }
           #services article main h2 {
-            font-size: clamp(28px, 9vw, 48px) !important;
+            font-size: clamp(30px, 7vw, 48px) !important;
+          }
+          #services article main p {
+            font-size: 14px !important;
+            margin: 14px 0 12px !important;
+            max-width: 620px;
+          }
+        }
+        @media (max-width: 639px) {
+          #services article main h2 {
+            font-size: clamp(28px, 9vw, 40px) !important;
           }
           #services article main p {
             font-size: 13px !important;

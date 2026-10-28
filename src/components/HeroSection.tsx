@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { url } from 'inspector';
 
 interface HeroSectionProps {
   onNavigate: (sectionId: string) => void;
