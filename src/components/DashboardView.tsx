@@ -47,7 +47,9 @@ import {
   MapPin,
   Download,
   X,
-  CheckCircle2
+  CheckCircle2,
+  Globe,
+  EyeOff
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -110,6 +112,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  /** id of the project whose Publish / Unpublish request is in flight */
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const [isAddingDesigner, setIsAddingDesigner] = useState(false);
   const [newDesignerName, setNewDesignerName] = useState('');
@@ -126,7 +130,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     try {
       const base: Promise<unknown>[] = [
         bookingsApi.list(),
-        projectsApi.list(),
+        projectsApi.list({ all: true }),
         teamApi.list(),
         testimonialsApi.adminList(),
         journalApi.list({ full: true })
@@ -275,6 +279,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (selectedProject?.id === id) setSelectedProject(null);
     } catch (err) {
       alert('Could not delete project.');
+    }
+  };
+
+  const handleTogglePublish = async (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isLive = project.published !== false;
+    if (
+      isLive &&
+      !window.confirm(`Unpublish "${project.title}"? It will disappear from the website but stay here as a draft.`)
+    ) {
+      return;
+    }
+    setPublishingId(project.id);
+    try {
+      const updated = await projectsApi.setPublished(project.id, !isLive);
+      setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      setSelectedProject((prev) => (prev && prev.id === updated.id ? updated : prev));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not change publish status. Please try again.');
+    } finally {
+      setPublishingId(null);
     }
   };
 
@@ -458,7 +483,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full bg-[var(--bg-card)]/5 border border-[var(--text-primary)]/15 text-xs font-semibold hover:bg-[var(--bg-card)]/10 cursor-pointer max-w-[140px] sm:max-w-none"
             >
               <span className="max-w-[72px] sm:max-w-[100px] truncate">{currentUser.name}</span>
-              <span className="hidden xs:inline sm:inline px-1.5 sm:px-2 py-0.5 rounded-full bg-[var(--bg-card)] text-[var(--text-on-accent)] text-[10px] font-bold uppercase shrink-0">
+              <span className="hidden xs:inline sm:inline px-1.5 sm:px-2 py-0.5 rounded-full bg-[var(--text-primary)] text-[var(--text-on-accent)] text-[10px] font-bold uppercase shrink-0">
                 {role}
               </span>
               <ChevronDown className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
@@ -491,7 +516,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onLogout();
               onClose();
             }}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-semibold hover:bg-red-500/20 cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-600 text-xs font-semibold hover:bg-red-500/20 cursor-pointer shrink-0"
             title="Logout"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -548,7 +573,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
           {loadError && !isLoading && (
-            <div className="text-center text-red-300 text-sm py-10">{loadError}</div>
+            <div className="text-center text-red-600 text-sm py-10">{loadError}</div>
           )}
 
           {!isLoading && !loadError && (
@@ -651,11 +676,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div>
                       <h1 className="font-serif-display text-2xl font-medium">Projects</h1>
                       <p className="text-xs text-[var(--text-muted)] mt-1">
-                        Tap a project to open full details · use Edit to change it
+                        Tap a project to preview it · new projects stay as drafts until you press Publish
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-500">{projects.length} total</span>
+                      <span className="text-xs text-slate-500">
+                        {projects.length} total · {projects.filter((p) => p.published !== false).length} live
+                      </span>
                       {(role === 'admin' || role === 'designer') && (
                         <button
                           type="button"
@@ -698,22 +725,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               alt={p.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] font-bold uppercase tracking-wider">
+                            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] font-bold uppercase tracking-wider text-white">
                               {p.category}
                             </span>
                             {p.imageGallery && p.imageGallery.length > 1 && (
-                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] font-semibold flex items-center gap-1">
+                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-semibold flex items-center gap-1">
                                 <Image className="w-3 h-3" /> {p.imageGallery.length}
                               </span>
                             )}
                             {/* Overlay under buttons so Edit/Delete stay clickable */}
                             <div className="absolute inset-0 z-10 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                              <span className="px-3 py-1.5 rounded-full bg-[var(--bg-card)] text-[var(--text-on-accent)] text-[11px] font-bold flex items-center gap-1.5">
-                                <Eye className="w-3.5 h-3.5" /> Open project
+                              <span className="px-3.5 py-1.5 rounded-full bg-white text-[#0A0A0A] text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
+                                <Eye className="w-3.5 h-3.5" /> Preview
                               </span>
                             </div>
                             {(role === 'admin' || role === 'designer') && (
-                              <div className="absolute top-2 right-2 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="absolute top-2 right-2 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -738,13 +765,52 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             )}
                           </div>
                           <div className="p-4">
-                            <h3 className="font-semibold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors">
-                              {p.title}
-                            </h3>
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-semibold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-warm)] transition-colors min-w-0 break-words">
+                                {p.title}
+                              </h3>
+                              <span
+                                className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                  p.published !== false
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-amber-100 text-amber-700'
+                                }`}
+                              >
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    p.published !== false ? 'bg-emerald-500' : 'bg-amber-500'
+                                  }`}
+                                />
+                                {p.published !== false ? 'Live' : 'Draft'}
+                              </span>
+                            </div>
                             <p className="text-[11px] text-[var(--text-muted)] mt-1 flex items-center gap-1">
-                              <MapPin className="w-3 h-3" /> {p.location} · {p.year}
+                              <MapPin className="w-3 h-3 shrink-0" /> {p.location} · {p.year}
                             </p>
                             <p className="text-[11px] text-slate-500 mt-2 line-clamp-2">{p.description}</p>
+
+                            {(role === 'admin' || role === 'designer') && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleTogglePublish(p, e)}
+                                onKeyDown={(e) => e.stopPropagation()}
+                                disabled={publishingId === p.id}
+                                className={`mt-4 w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait ${
+                                  p.published !== false
+                                    ? 'border border-[var(--text-primary)]/25 text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
+                                    : 'bg-[var(--accent-warm)] text-white hover:bg-[var(--accent-warm-hover)]'
+                                }`}
+                              >
+                                {publishingId === p.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : p.published !== false ? (
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Globe className="w-3.5 h-3.5" />
+                                )}
+                                {p.published !== false ? 'Unpublish' : 'Publish'}
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))
@@ -793,7 +859,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                                   <span
                                     className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
                                       b.status === 'Confirmed'
-                                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                        ? 'bg-emerald-500/20 text-emerald-700 border border-emerald-500/40'
                                         : b.status === 'Pending'
                                           ? 'bg-[var(--accent-warm)]/20 text-[var(--accent-amber)] border border-[var(--accent-warm)]/40'
                                           : 'bg-[var(--bg-surface)]0/20 text-[var(--text-secondary)] border border-[var(--text-primary)]/20'
@@ -854,7 +920,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       type="button"
                       onClick={handleExportEnquiries}
                       disabled={messages.length === 0}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--bg-card)]/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--accent-warm)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Export CSV
@@ -977,7 +1043,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         setIsAddingDesigner((v) => !v);
                         setDesignerFormError('');
                       }}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--bg-card)]/90"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--text-primary)] text-[var(--text-on-accent)] text-xs font-bold cursor-pointer hover:bg-[var(--accent-warm)] transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add Designer
@@ -1013,7 +1079,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         />
                       </div>
                       {designerFormError && (
-                        <p className="text-xs text-red-300 bg-red-500/100/10 border border-red-500/30 rounded-lg px-3 py-2">
+                        <p className="text-xs text-red-600 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
                           {designerFormError}
                         </p>
                       )}
@@ -1052,7 +1118,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               <td className="p-3">
                                 <button
                                   onClick={() => handleRemoveDesigner(d.id, d.name)}
-                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/100/10 text-red-300 border border-red-500/30 hover:bg-red-500/100/20 cursor-pointer text-[11px] font-semibold"
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-600 border border-red-500/30 hover:bg-red-500/100/20 cursor-pointer text-[11px] font-semibold"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                   Remove
@@ -1330,7 +1396,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                       <div className="flex justify-between gap-4 border-b border-[var(--text-primary)]/5 pb-2">
                         <span className="text-[var(--text-muted)]">Role</span>
-                        <span className="px-2 py-0.5 rounded-full bg-[var(--bg-card)] text-[var(--text-on-accent)] text-[10px] font-bold uppercase">
+                        <span className="px-2 py-0.5 rounded-full bg-[var(--text-primary)] text-[var(--text-on-accent)] text-[10px] font-bold uppercase">
                           {currentUser.role}
                         </span>
                       </div>
@@ -1351,7 +1417,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         onLogout();
                         onClose();
                       }}
-                      className="mt-2 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/100/15 border border-red-500/30 text-red-300 text-xs font-bold hover:bg-red-500/100/25 cursor-pointer"
+                      className="mt-2 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 text-xs font-bold hover:bg-red-500/100/25 cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       Log out of account

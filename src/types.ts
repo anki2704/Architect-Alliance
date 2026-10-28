@@ -43,6 +43,8 @@ export interface Project {
   diagrams?: ProjectDiagram[];
   credits?: ProjectCredits;
   coordinates?: { lat: number; lng: number };
+  /** false = draft (only staff can see it); true / undefined = live on the website. */
+  published?: boolean;
 }
 
 export type BookingStatus = 'Pending' | 'Confirmed' | 'In Progress' | 'Completed' | 'Cancelled';

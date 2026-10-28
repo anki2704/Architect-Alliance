@@ -400,7 +400,10 @@ export default function App() {
                 <ProjectGallery
                   projects={projects}
                   currentUser={currentUser}
-                  onProjectCreated={(newProject) => setProjects((prev) => [newProject, ...prev])}
+                  onProjectCreated={(newProject) => {
+                    // New projects start as drafts; only live ones belong on the public site.
+                    if (newProject.published !== false) setProjects((prev) => [newProject, ...prev]);
+                  }}
                   onProjectDeleted={(id) => setProjects((prev) => prev.filter((p) => p.id !== id))}
                 />
                 {/* gallery ke just neeche */}

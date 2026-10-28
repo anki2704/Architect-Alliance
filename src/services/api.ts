@@ -166,12 +166,15 @@ export const authApi = {
 
 // ---- Projects ----
 export const projectsApi = {
-  list: () => apiFetch<Project[]>('/projects'),
+  // Public site: live projects only. Dashboard passes { all: true } to also get drafts (staff only).
+  list: (opts?: { all?: boolean }) => apiFetch<Project[]>(`/projects${opts?.all ? '?all=1' : ''}`),
   get: (id: string) => apiFetch<Project>(`/projects/${id}`),
   create: (data: Partial<Project>) =>
     apiFetch<Project>('/projects', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Project>) =>
     apiFetch<Project>(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  setPublished: (id: string, published: boolean) =>
+    apiFetch<Project>(`/projects/${id}/publish`, { method: 'PATCH', body: JSON.stringify({ published }) }),
   remove: (id: string) => apiFetch<void>(`/projects/${id}`, { method: 'DELETE' })
 };
 
